@@ -1,4 +1,5 @@
-import type { Agent, Repository, Rule, LearnedRule, Report } from './types';
+// @google/genai-api-fix: Add Issue to type import
+import type { Agent, Repository, Rule, LearnedRule, Report, TechnicalDebtReport, Issue } from './types';
 import { Page } from './types';
 
 export const NAV_ITEMS = [
@@ -90,6 +91,51 @@ export const LEARNED_RULES: LearnedRule[] = [
     },
 ];
 
+// @google/genai-api-fix: Add explicit type to TECHNICAL_DEBT_MASTER_DATA to fix type inference issue with issue priorities.
+// Single Source of Truth for Technical Debt Data
+const TECHNICAL_DEBT_MASTER_DATA: {
+    health: number;
+    stats: { newIssues: number; fixedIssues: number; healthChange: number; p0Issues: number; };
+    hotspotFiles: { file: string; issueCount: number; }[];
+    issues: Issue[];
+    architecturalConcerns: { title: string; description: string; severity: 'High' | 'Medium'; }[];
+    techStackRisks: { library: string; version: string; risk: string; }[];
+} = {
+    health: 69,
+    stats: { newIssues: 13, fixedIssues: 5, healthChange: -3, p0Issues: 2 },
+    hotspotFiles: [
+        { file: 'payment/PaymentService.java', issueCount: 3 },
+        { file: 'order/OrderCreation.java', issueCount: 2 },
+        { file: 'components/checkout/Form.tsx', issueCount: 2 },
+    ],
+    issues: [
+        // Tech Lead / General issues
+        { id: 'i1', priority: 'P0', file: 'payment/PaymentService.java', description: '锁块内执行RPC调用 - 可能导致死锁', category: '性能' },
+        { id: 'i2', priority: 'P1', file: 'payment/TransactionManager.java', description: '事务中捕获异常未回滚 - 可能导致数据不一致', category: '可靠性' },
+        { id: 'i3', priority: 'P2', file: 'payment/RefundController.java', description: '使用SELECT *查询', category: '性能' },
+        { id: 'i1-1', priority: 'P1', file: 'payment/util/Converter.java', description: '大数计算可能导致精度丢失', category: '可靠性' },
+        { id: 'i1-2', priority: 'P1', file: 'payment/PaymentService.java', description: '空指针检查缺失', category: '可靠性' },
+        { id: 'i1-3', priority: 'P2', file: 'payment/config/CacheConfig.java', description: '硬编码了密码', category: '安全' },
+        { id: 'i1-4', priority: 'P1', file: 'order/OrderCreation.java', description: '方法圈复杂度过高', category: '可维护性' },
+        { id: 'i1-5', priority: 'P2', file: 'order/OrderRepository.java', description: '重复代码块', category: '可维护性' },
+        // Developer focused issues
+        { id: 'd1', priority: 'P0', file: 'components/checkout/Form.tsx', description: '未处理的Promise拒绝可能导致页面崩溃', category: '可靠性' },
+        { id: 'd2', priority: 'P1', file: 'components/checkout/Form.tsx', description: 'useEffect存在无限循环依赖', category: '性能' },
+        { id: 'd3', priority: 'P1', file: 'utils/currency.ts', description: '大数计算可能导致精度丢失', category: '可靠性' },
+        // Architect focused issues
+        { id: 'a1', priority: 'P1', file: 'service/OrderCreationService.java', description: '与库存服务存在循环依赖风险', category: '架构' },
+        { id: 'a2', priority: 'P2', file: 'repository/OrderRepository.java', description: '技术栈风险：使用了即将废弃的数据库驱动版本', category: '依赖管理' },
+    ],
+    // Architect specific data fields
+    architecturalConcerns: [
+        { title: '循环依赖', description: `在 'order-service' 中，'service' 层和 'repository' 层之间检测到循环依赖，破坏了分层架构。`, severity: 'High' },
+    ],
+    techStackRisks: [
+        { library: 'log4j', version: '2.14.0', risk: '存在已知安全漏洞 (Log4Shell)，建议立即升级。' },
+    ]
+};
+
+
 export const REPORTS: Report[] = [
     {
         id: 'report-1',
@@ -99,19 +145,8 @@ export const REPORTS: Report[] = [
         agentName: '支付模块守护者',
         repoName: 'payment-service',
         date: '2025-10-27',
-        stats: { newIssues: 15, fixedIssues: 8, healthChange: -2, p0Issues: 2 },
-        health: 70,
-        hotspotFiles: [
-            { file: 'PaymentService.java', issueCount: 5 },
-            { file: 'TransactionManager.java', issueCount: 3 },
-            { file: 'RefundController.java', issueCount: 2 },
-        ],
-        newIssuesList: [
-            { id: 'i1', priority: 'P0', file: 'PaymentService.java', description: '锁块内执行RPC调用 - 可能导致死锁' },
-            { id: 'i2', priority: 'P1', file: 'TransactionManager.java', description: '事务中捕获异常未回滚 - 可能导致数据不一致' },
-            { id: 'i3', priority: 'P2', file: 'RefundController.java', description: '使用SELECT *查询' },
-        ],
         createdByRole: 'tech-lead',
+        ...TECHNICAL_DEBT_MASTER_DATA,
     },
     {
         id: 'report-3',
@@ -121,18 +156,8 @@ export const REPORTS: Report[] = [
         agentName: '前端代码卫士',
         repoName: 'web-frontend',
         date: '2025-10-27',
-        stats: { newIssues: 3, fixedIssues: 10, healthChange: 5, p0Issues: 1 },
-        health: 91,
-        hotspotFiles: [
-            { file: 'components/checkout/Form.tsx', issueCount: 2 },
-            { file: 'utils/currency.ts', issueCount: 1 },
-        ],
-        newIssuesList: [
-            { id: 'd1', priority: 'P0', file: 'components/checkout/Form.tsx', description: '未处理的Promise拒绝可能导致页面崩溃' },
-            { id: 'd2', priority: 'P1', file: 'components/checkout/Form.tsx', description: 'useEffect存在无限循环依赖' },
-            { id: 'd3', priority: 'P1', file: 'utils/currency.ts', description: '大数计算可能导致精度丢失' },
-        ],
         createdByRole: 'developer',
+        ...TECHNICAL_DEBT_MASTER_DATA, // Using the same master data
     },
      {
         id: 'report-4',
@@ -142,17 +167,8 @@ export const REPORTS: Report[] = [
         agentName: '订单系统监护',
         repoName: 'order-service',
         date: '2025-10-27',
-        stats: { newIssues: 2, fixedIssues: 0, healthChange: -1, p0Issues: 0 },
-        health: 88,
-        hotspotFiles: [
-            { file: 'service/OrderCreationService.java', issueCount: 1 },
-            { file: 'repository/OrderRepository.java', issueCount: 1 },
-        ],
-        newIssuesList: [
-            { id: 'a1', priority: 'P1', file: 'service/OrderCreationService.java', description: '与库存服务存在循环依赖风险' },
-            { id: 'a2', priority: 'P2', file: 'repository/OrderRepository.java', description: '技术栈风险：使用了即将废弃的数据库驱动版本' },
-        ],
         createdByRole: 'architect',
+        ...TECHNICAL_DEBT_MASTER_DATA, // Using the same master data
     },
     {
         id: 'report-2',
@@ -170,9 +186,9 @@ export const REPORTS: Report[] = [
             'schema.sql'
         ],
         newIssuesList: [
-            { id: 'i4', priority: 'P1', file: 'OrderController.java', description: '未对用户输入进行充分校验' },
-            { id: 'i5', priority: 'P2', file: 'OrderService.java', description: '方法圈复杂度过高' },
-            { id: 'i6', priority: 'P2', file: 'OrderService.java', description: '硬编码了超时时间' },
+            { id: 'i4', priority: 'P1', file: 'OrderController.java', description: '未对用户输入进行充分校验', category: '安全' },
+            { id: 'i5', priority: 'P2', file: 'OrderService.java', description: '方法圈复杂度过高', category: '可维护性' },
+            { id: 'i6', priority: 'P2', file: 'OrderService.java', description: '硬编码了超时时间', category: '可维护性' },
         ],
         createdByRole: 'tech-lead',
     },

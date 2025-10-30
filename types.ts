@@ -69,6 +69,7 @@ export interface Issue {
     priority: 'P0' | 'P1' | 'P2';
     file: string;
     description: string;
+    category: string;
 }
 
 interface BaseReport {
@@ -82,11 +83,19 @@ interface BaseReport {
     createdByRole: Role;
 }
 
+// Unified Technical Debt Report - The Single Source of Truth
 export interface TechnicalDebtReport extends BaseReport {
     type: '技术债治理';
     health: number;
+    // Comprehensive issue list for all roles
+    issues: Issue[]; 
+    
+    // Data for Tech Lead View
     hotspotFiles: { file: string; issueCount: number }[];
-    newIssuesList: Issue[];
+    
+    // Data for Architect View
+    architecturalConcerns?: { title: string; description: string; severity: 'High' | 'Medium' }[];
+    techStackRisks?: { library: string; version: string; risk: string }[];
 }
 
 export interface ChangeRiskReport extends BaseReport {
