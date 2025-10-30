@@ -32,7 +32,8 @@ const App: React.FC = () => {
     const scenarioMap = {
         'tech-debt': '技术债治理',
         'change-risk': '变更风险评估',
-        'project-acceptance': '项目验收'
+        'project-acceptance': '项目验收',
+        'risk-radar': '风险雷达',
     };
     
     const repoName = REPOSITORIES.find(r => r.id === newAgentData.source.repos[0])?.name || 'unknown-repo';

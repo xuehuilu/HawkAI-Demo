@@ -365,10 +365,11 @@ const Step2_BasicInfo: React.FC<{ agentName: string, setAgentName: (name: string
                 </div>
                 <div>
                     <label className="text-sm font-semibold text-slate-700 block mb-2">角色定位</label>
-                    <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <RoleCard icon="👨‍💻" title="开发助手" description="关注我负责的模块" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
                         <RoleCard icon="👔" title="团队管家" description="关注整个团队的代码质量" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
                         <RoleCard icon="🏗️" title="架构顾问" description="关注系统架构问题" selected={selectedRole === 'architect'} onClick={() => setSelectedRole('architect')} />
+                        <RoleCard icon="📈" title="技术管理者" description="关注跨团队的技术风险与效能" selected={selectedRole === 'tech-manager'} onClick={() => setSelectedRole('tech-manager')} />
                     </div>
                 </div>
             </div>
@@ -392,10 +393,11 @@ const Step3_Scenario: React.FC<{ onNext: () => void, onPrev: () => void }> = ({ 
         <div>
             <h2 className="text-xl font-bold text-slate-800">🎯 选择分析场景</h2>
             <p className="mt-1 text-sm text-slate-500 mb-6">根据你的需求选择Agent的工作模式。</p>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                  <ScenarioCard icon="🔧" title="技术债治理" description="持续监控和改善代码质量，关注累积的技术风险和长期债务。" features={['全量代码分析', '热点文件识别', '定期巡检报告']} selected={selectedScenario === 'tech-debt'} onClick={() => setSelectedScenario('tech-debt')} />
                  <ScenarioCard icon="📊" title="变更风险评估" description="深度分析每次代码变更的影响范围和潜在风险，预防生产事故。" features={['变更影响分析', '依赖关系追踪', '风险等级评估']} selected={selectedScenario === 'change-risk'} onClick={() => setSelectedScenario('change-risk')} />
                  <ScenarioCard icon="🏆" title="项目验收" description="在项目上线前进行全面代码审查，确保符合质量标准和规范。" features={['编码规范检查', '安全漏洞扫描', '代码重复率检测']} selected={selectedScenario === 'project-acceptance'} onClick={() => setSelectedScenario('project-acceptance')} />
+                 <ScenarioCard icon="📡" title="风险雷达" description="主动发现跨项目/团队的潜在风险，为管理者提供决策支持。" features={['跨库依赖分析', '技术栈健康度巡检', '团队效能度量']} selected={selectedScenario === 'risk-radar'} onClick={() => setSelectedScenario('risk-radar')} />
             </div>
             <ActionButtons onNext={onNext} onPrev={onPrev} />
         </div>

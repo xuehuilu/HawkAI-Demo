@@ -31,9 +31,9 @@ export interface Repository {
     agentCount: number;
 }
 
-export type Role = 'developer' | 'tech-lead' | 'architect';
+export type Role = 'developer' | 'tech-lead' | 'architect' | 'tech-manager';
 
-export type Scenario = 'tech-debt' | 'change-risk' | 'project-acceptance';
+export type Scenario = 'tech-debt' | 'change-risk' | 'project-acceptance' | 'risk-radar';
 
 export type Preference = 'stability' | 'risk' | 'balanced';
 
