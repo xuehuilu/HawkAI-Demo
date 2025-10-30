@@ -146,7 +146,9 @@ public void decreaseStock(Long productId, int amount) {
         stock.setCount(stock.getCount() - amount);
         stockMapper.updateById(stock);
     } // <-- 锁结束
-}`
+}`,
+            affectedModules: ['库存模块', '订单模块'],
+            affectedApis: ['/stock/decrease', '/order/create'],
         },
         {
             id: 'f-2',
@@ -164,7 +166,9 @@ public void createOrder(Order order) {
     // 问题：在数据库事务中进行了外部RPC调用
     // 这会长时间占用数据库连接，降低系统吞吐量
     paymentApiClient.requestPayment(order.getId()); // <-- 问题代码
-}`
+}`,
+            affectedModules: ['订单模块', '支付模块'],
+            affectedApis: ['/order/create', '/payment/request'],
         },
         {
             id: 'f-3',
@@ -187,7 +191,9 @@ public String processFile(String path) throws IOException {
         }
     }
     return "done";
-}`
+}`,
+            affectedModules: ['报表导出模块', '文件上传模块'],
+            affectedApis: ['/report/export', '/file/upload'],
         },
         {
             id: 'f-4',
@@ -208,7 +214,9 @@ public List<UserWithOrders> listUsersWithOrders() {
         result.add(new UserWithOrders(user, orders));
     }
     return result;
-}`
+}`,
+            affectedModules: ['用户模块', '管理后台'],
+            affectedApis: ['/api/v1/users/list-with-orders'],
         },
         {
             id: 'f-5',
@@ -226,7 +234,9 @@ ExecutorService executor = Executors.newFixedThreadPool(10); // <-- 问题代码
 
 public void submit(Runnable task) {
     executor.submit(task);
-}`
+}`,
+            affectedModules: ['异步任务模块', '全局'],
+            affectedApis: ['/task/submit-async'],
         },
         {
             id: 'f-6',
@@ -248,7 +258,9 @@ public PaymentResponse callPaymentApi(PaymentRequest request) {
         .POST(BodyPublishers.ofString(toJson(request)))
         .build();
     // ... send request ...
-}`
+}`,
+            affectedModules: ['支付模块', '订单模块'],
+            affectedApis: ['/order/create-and-pay'],
         },
         {
             id: 'f-7',
@@ -266,7 +278,9 @@ private static final Map<String, Object> cache = new HashMap<>(); // <-- 问题�
 
 public void put(String key, Object value) {
     cache.put(key, value);
-}`
+}`,
+            affectedModules: ['商品信息模块', '用户配置模块'],
+            affectedApis: ['/product/get/{id}', '/user/config'],
         },
     ]
 };

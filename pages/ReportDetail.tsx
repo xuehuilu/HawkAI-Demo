@@ -167,6 +167,39 @@ const FindingDetailModal: React.FC<{ finding: Finding | null; onClose: () => voi
                         </div>
                     </div>
 
+                    {/* Impact Assessment */}
+                    {(finding.affectedModules?.length || finding.affectedApis?.length) && (
+                        <div className="bg-white p-4 rounded-lg border border-slate-200">
+                            <h4 className="text-sm font-bold text-slate-700 mb-3">影响范围评估</h4>
+                            <div className="space-y-3">
+                                {finding.affectedModules && finding.affectedModules.length > 0 && (
+                                    <div>
+                                        <p className="text-xs text-slate-500 font-semibold mb-2">影响模块:</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {finding.affectedModules.map((mod) => (
+                                                <span key={mod} className="bg-sky-100 text-sky-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+                                                    {mod}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {finding.affectedApis && finding.affectedApis.length > 0 && (
+                                    <div>
+                                        <p className="text-xs text-slate-500 font-semibold mb-2">影响接口:</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {finding.affectedApis.map((api) => (
+                                                <span key={api} className="bg-violet-100 text-violet-800 text-xs font-semibold font-mono px-2.5 py-1 rounded-full">
+                                                    {api}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Code Snippet */}
                     {finding.codeSnippet && (
                         <div className="bg-white p-4 rounded-lg border border-slate-200">

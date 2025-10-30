@@ -75,6 +75,8 @@ export interface Finding {
     description: string;
     suggestion: string;
     codeSnippet?: string;
+    affectedModules?: string[];
+    affectedApis?: string[];
 }
 
 
