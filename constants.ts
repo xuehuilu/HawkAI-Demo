@@ -1,6 +1,5 @@
-// @google/genai-api-fix: Add Issue to type import
 // @google/genai-api-fix: Add BaseReport to type import to fix type errors.
-import type { Agent, Repository, Rule, LearnedRule, Report, TechnicalDebtReport, Issue, PrecisionTestReport, BaseReport } from './types';
+import type { Agent, Repository, Rule, LearnedRule, Report, PrecisionTestReport, BaseReport, ReliabilityTestReport, Finding } from './types';
 import { Page } from './types';
 
 export const NAV_ITEMS = [
@@ -92,49 +91,6 @@ export const LEARNED_RULES: LearnedRule[] = [
     },
 ];
 
-// @google/genai-api-fix: Add explicit type to TECHNICAL_DEBT_MASTER_DATA to fix type inference issue with issue priorities.
-// Single Source of Truth for Technical Debt Data
-const TECHNICAL_DEBT_MASTER_DATA: {
-    health: number;
-    stats: { newIssues: number; fixedIssues: number; healthChange: number; p0Issues: number; };
-    hotspotFiles: { file: string; issueCount: number; }[];
-    issues: Issue[];
-    architecturalConcerns: { title: string; description: string; severity: 'High' | 'Medium'; }[];
-    techStackRisks: { library: string; version: string; risk: string; }[];
-} = {
-    health: 69,
-    stats: { newIssues: 13, fixedIssues: 5, healthChange: -3, p0Issues: 2 },
-    hotspotFiles: [
-        { file: 'payment/PaymentService.java', issueCount: 3 },
-        { file: 'order/OrderCreation.java', issueCount: 2 },
-        { file: 'components/checkout/Form.tsx', issueCount: 2 },
-    ],
-    issues: [
-        // Tech Lead / General issues
-        { id: 'i1', priority: 'P0', file: 'payment/PaymentService.java', description: '锁块内执行RPC调用 - 可能导致死锁', category: '性能' },
-        { id: 'i2', priority: 'P1', file: 'payment/TransactionManager.java', description: '事务中捕获异常未回滚 - 可能导致数据不一致', category: '可靠性' },
-        { id: 'i3', priority: 'P2', file: 'payment/RefundController.java', description: '使用SELECT *查询', category: '性能' },
-        { id: 'i1-1', priority: 'P1', file: 'payment/util/Converter.java', description: '大数计算可能导致精度丢失', category: '可靠性' },
-        { id: 'i1-2', priority: 'P1', file: 'payment/PaymentService.java', description: '空指针检查缺失', category: '可靠性' },
-        { id: 'i1-3', priority: 'P2', file: 'payment/config/CacheConfig.java', description: '硬编码了密码', category: '安全' },
-        { id: 'i1-4', priority: 'P1', file: 'order/OrderCreation.java', description: '方法圈复杂度过高', category: '可维护性' },
-        { id: 'i1-5', priority: 'P2', file: 'order/OrderRepository.java', description: '重复代码块', category: '可维护性' },
-        // Developer focused issues
-        { id: 'd1', priority: 'P0', file: 'components/checkout/Form.tsx', description: '未处理的Promise拒绝可能导致页面崩溃', category: '可靠性' },
-        { id: 'd2', priority: 'P1', file: 'components/checkout/Form.tsx', description: 'useEffect存在无限循环依赖', category: '性能' },
-        { id: 'd3', priority: 'P1', file: 'utils/currency.ts', description: '大数计算可能导致精度丢失', category: '可靠性' },
-        // Architect focused issues
-        { id: 'a1', priority: 'P1', file: 'service/OrderCreationService.java', description: '与库存服务存在循环依赖风险', category: '架构' },
-        { id: 'a2', priority: 'P2', file: 'repository/OrderRepository.java', description: '技术栈风险：使用了即将废弃的数据库驱动版本', category: '依赖管理' },
-    ],
-    // Architect specific data fields
-    architecturalConcerns: [
-        { title: '循环依赖', description: `在 'order-service' 中，'service' 层和 'repository' 层之间检测到循环依赖，破坏了分层架构。`, severity: 'High' },
-    ],
-    techStackRisks: [
-        { library: 'log4j', version: '2.14.0', risk: '存在已知安全漏洞 (Log4Shell)，建议立即升级。' },
-    ]
-};
 
 // Data for the new Precision Test Report
 const PRECISION_TEST_REPORT_DATA: Omit<PrecisionTestReport, keyof Omit<BaseReport, 'stats'>> & { stats: Report['stats'] } = {
@@ -164,8 +120,169 @@ const PRECISION_TEST_REPORT_DATA: Omit<PrecisionTestReport, keyof Omit<BaseRepor
     ]
 };
 
+// Data for the new Reliability Test Report
+const RELIABILITY_TEST_REPORT_DATA: Omit<ReliabilityTestReport, keyof Omit<BaseReport, 'stats'>> & { stats: Report['stats'] } = {
+    type: '可靠性测试',
+    health: 82,
+    stats: { newIssues: 7, fixedIssues: 2, healthChange: -5, p0Issues: 1 },
+    findings: [
+        {
+            id: 'f-1',
+            code: '1.2.3',
+            category: '并发与锁',
+            priority: 'P0',
+            file: 'services/StockService.java',
+            line: 112,
+            description: '在锁块（synchronized/Lock）内部执行了RPC调用',
+            suggestion: '将RPC调用移出同步代码块，先释放锁再进行网络通信，以避免长时间阻塞和潜在的死锁风险。',
+            codeSnippet: `// StockService.java:112
+public void decreaseStock(Long productId, int amount) {
+    synchronized(this) { // <-- 锁开始
+        Stock stock = stockMapper.selectById(productId);
+        if (stock.getCount() < amount) {
+            // 在锁块内部进行RPC调用，风险极高
+            notificationRpcService.sendStockAlert(productId); // <-- 问题代码
+        }
+        stock.setCount(stock.getCount() - amount);
+        stockMapper.updateById(stock);
+    } // <-- 锁结束
+}`
+        },
+        {
+            id: 'f-2',
+            code: '1.3.1',
+            category: '事务与数据库',
+            priority: 'P1',
+            file: 'services/OrderService.java',
+            line: 88,
+            description: '事务中包含了对外部的RPC调用',
+            suggestion: '应先执行数据库事务并提交，再进行RPC调用。若需保证一致性，请采用可靠消息最终一致性方案。',
+            codeSnippet: `// OrderService.java:88
+@Transactional
+public void createOrder(Order order) {
+    orderMapper.insert(order);
+    // 问题：在数据库事务中进行了外部RPC调用
+    // 这会长时间占用数据库连接，降低系统吞吐量
+    paymentApiClient.requestPayment(order.getId()); // <-- 问题代码
+}`
+        },
+        {
+            id: 'f-3',
+            code: '1.1.3',
+            category: '资源管理',
+            priority: 'P1',
+            file: 'utils/FileProcessor.java',
+            line: 45,
+            description: '文件IO流等原生资源，未使用 try-with-resources 语句确保关闭',
+            suggestion: '将`new FileInputStream(...)`等资源创建语句包裹在`try-with-resources`中，确保流被自动关闭。',
+            codeSnippet: `// FileProcessor.java:45
+public String processFile(String path) throws IOException {
+    // 问题：如果เกิด an exception, inputStream 可能不会被关闭
+    FileInputStream inputStream = new FileInputStream(path); // <-- 问题代码
+    try {
+        // ... 文件处理逻辑 ...
+    } finally {
+        if (inputStream != null) {
+            inputStream.close();
+        }
+    }
+    return "done";
+}`
+        },
+        {
+            id: 'f-4',
+            code: '1.3.5',
+            category: '事务与数据库',
+            priority: 'P1',
+            file: 'services/UserService.java',
+            line: 201,
+            description: '检测到N+1查询模式',
+            suggestion: '在查询用户列表后，循环查询了每个用户的订单。请使用JOIN查询或批量查询一次性获取所有用户的订单数据。',
+            codeSnippet: `// UserService.java:201
+public List<UserWithOrders> listUsersWithOrders() {
+    List<User> users = userMapper.selectAll(); // 第1次查询
+    List<UserWithOrders> result = new ArrayList<>();
+    for (User user : users) { // 循环
+        // N+1 问题：在循环中为每个用户执行一次查询
+        List<Order> orders = orderMapper.findByUserId(user.getId()); // <-- 问题代码
+        result.add(new UserWithOrders(user, orders));
+    }
+    return result;
+}`
+        },
+        {
+            id: 'f-5',
+            code: '1.2.5',
+            category: '并发与锁',
+            priority: 'P2',
+            file: 'jobs/TaskScheduler.java',
+            line: 31,
+            description: '禁止使用 Executors.newFixedThreadPool，必须通过 ThreadPoolExecutor 构造函数显式创建',
+            suggestion: '使用`new ThreadPoolExecutor(...)`显式指定核心线程数、最大线程数、队列类型和拒绝策略，以避免资源耗尽风险。',
+            codeSnippet: `// TaskScheduler.java:31
+// 问题：使用Executors工厂类创建线程池，可能导致资源耗尽
+// newFixedThreadPool 使用了无界队列 LinkedBlockingQueue
+ExecutorService executor = Executors.newFixedThreadPool(10); // <-- 问题代码
+
+public void submit(Runnable task) {
+    executor.submit(task);
+}`
+        },
+        {
+            id: 'f-6',
+            code: '3.2.1',
+            category: '外部调用与容错',
+            priority: 'P1',
+            file: 'clients/PaymentApiClient.java',
+            line: 56,
+            description: '所有对外部依赖（HTTP/RPC）的调用，必须设置明确的超时时间',
+            suggestion: '为HttpClient或RPC客户端配置连接超时（Connect Timeout）和读取超时（Read Timeout）。',
+            codeSnippet: `// PaymentApiClient.java:56
+public PaymentResponse callPaymentApi(PaymentRequest request) {
+    // 问题：HttpClient 未设置超时时间
+    // 在网络状况不佳时，可能导致线程长时间阻塞
+    HttpClient client = HttpClient.newHttpClient(); // <-- 问题代码
+    HttpRequest httpRequest = HttpRequest.newBuilder()
+        .uri(URI.create(API_ENDPOINT))
+        // 正确做法: .timeout(Duration.ofSeconds(5))
+        .POST(BodyPublishers.ofString(toJson(request)))
+        .build();
+    // ... send request ...
+}`
+        },
+        {
+            id: 'f-7',
+            code: '1.1.1',
+            category: '资源管理',
+            priority: 'P2',
+            file: 'cache/LocalCacheManager.java',
+            line: 25,
+            description: '所有本地缓存都必须有容量上限',
+            suggestion: '推荐使用Caffeine/Guava等专业缓存库，或在手动实现的缓存中添加大小限制和淘汰策略。',
+            codeSnippet: `// LocalCacheManager.java:25
+// 问题：手动实现的本地缓存没有容量上限
+// 可能因数据不断写入而导致内存溢出 (OOM)
+private static final Map<String, Object> cache = new HashMap<>(); // <-- 问题代码
+
+public void put(String key, Object value) {
+    cache.put(key, value);
+}`
+        },
+    ]
+};
+
 
 export const REPORTS: Report[] = [
+    {
+        id: 'report-6',
+        title: '核心交易链路 - 可靠性专项测试报告',
+        icon: '🛡️',
+        agentName: '电商平台V3上线-性能压测',
+        repoName: 'payment-service',
+        date: '2025-11-10',
+        createdByRole: 'architect',
+        ...RELIABILITY_TEST_REPORT_DATA,
+    },
     {
         id: 'report-5',
         title: '订单服务 - 精准测试报告',
@@ -175,60 +292,5 @@ export const REPORTS: Report[] = [
         date: '2025-11-05',
         createdByRole: 'tech-lead',
         ...PRECISION_TEST_REPORT_DATA,
-    },
-    {
-        id: 'report-1',
-        title: '支付模块守护者 - 技术债周报 (负责人视图)',
-        type: '技术债治理',
-        icon: '🔧',
-        agentName: '支付模块守护者',
-        repoName: 'payment-service',
-        date: '2025-10-27',
-        createdByRole: 'tech-lead',
-        ...TECHNICAL_DEBT_MASTER_DATA,
-    },
-    {
-        id: 'report-3',
-        title: '前端代码卫士 - 高优问题修复清单 (开发者视图)',
-        type: '技术债治理',
-        icon: '👨‍💻',
-        agentName: '前端代码卫士',
-        repoName: 'web-frontend',
-        date: '2025-10-27',
-        createdByRole: 'developer',
-        ...TECHNICAL_DEBT_MASTER_DATA, // Using the same master data
-    },
-     {
-        id: 'report-4',
-        title: '订单系统监护 - 系统风险评估 (架构师视图)',
-        type: '技术债治理',
-        icon: '🏗️',
-        agentName: '订单系统监护',
-        repoName: 'order-service',
-        date: '2025-10-27',
-        createdByRole: 'architect',
-        ...TECHNICAL_DEBT_MASTER_DATA, // Using the same master data
-    },
-    {
-        id: 'report-2',
-        title: '订单系统监护 - 变更风险评估 #PR-125',
-        type: '变更风险评估',
-        icon: '📊',
-        agentName: '订单系统监护',
-        repoName: 'order-service',
-        date: '2025-10-26',
-        stats: { newIssues: 3, fixedIssues: 0, healthChange: 0, p0Issues: 0 },
-        riskLevel: '高',
-        affectedFiles: [
-            'OrderController.java',
-            'OrderService.java',
-            'schema.sql'
-        ],
-        newIssuesList: [
-            { id: 'i4', priority: 'P1', file: 'OrderController.java', description: '未对用户输入进行充分校验', category: '安全' },
-            { id: 'i5', priority: 'P2', file: 'OrderService.java', description: '方法圈复杂度过高', category: '可维护性' },
-            { id: 'i6', priority: 'P2', file: 'OrderService.java', description: '硬编码了超时时间', category: '可维护性' },
-        ],
-        createdByRole: 'tech-lead',
     },
 ];

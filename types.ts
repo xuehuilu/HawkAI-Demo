@@ -64,45 +64,30 @@ export interface ReportStat {
     p0Issues: number;
 }
 
-export interface Issue {
+// A Finding from a reliability test
+export interface Finding {
     id: string;
+    code: string; // e.g., '1.2.3'
+    category: string;
     priority: 'P0' | 'P1' | 'P2';
     file: string;
+    line?: number;
     description: string;
-    category: string;
+    suggestion: string;
+    codeSnippet?: string;
 }
 
-interface BaseReport {
+
+// @google/genai-api-fix: Export `BaseReport` interface to fix type errors in other files.
+export interface BaseReport {
     id: string;
     title: string;
     icon: string;
     agentName: string;
     repoName: string;
     date: string;
-    stats: ReportStat; // Kept for list view consistency, but detail view might use specific KPIs
+    stats: ReportStat; 
     createdByRole: Role;
-}
-
-// Unified Technical Debt Report - The Single Source of Truth
-export interface TechnicalDebtReport extends BaseReport {
-    type: '技术债治理';
-    health: number;
-    // Comprehensive issue list for all roles
-    issues: Issue[]; 
-    
-    // Data for Tech Lead View
-    hotspotFiles: { file: string; issueCount: number }[];
-    
-    // Data for Architect View
-    architecturalConcerns?: { title: string; description: string; severity: 'High' | 'Medium' }[];
-    techStackRisks?: { library: string; version: string; risk: string }[];
-}
-
-export interface ChangeRiskReport extends BaseReport {
-    type: '变更风险评估';
-    riskLevel: '高' | '中' | '低';
-    affectedFiles: string[];
-    newIssuesList: Issue[];
 }
 
 // New Precision Test Report
@@ -139,5 +124,12 @@ export interface PrecisionTestReport extends BaseReport {
     }[];
 }
 
+// New Reliability Test Report
+export interface ReliabilityTestReport extends BaseReport {
+    type: '可靠性测试';
+    health: number;
+    findings: Finding[];
+}
 
-export type Report = TechnicalDebtReport | ChangeRiskReport | PrecisionTestReport;
+
+export type Report = PrecisionTestReport | ReliabilityTestReport;

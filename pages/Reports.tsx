@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageHeader } from '../components/PageHeader';
-import type { Report, PrecisionTestReport } from '../types';
+import type { Report, PrecisionTestReport, ReliabilityTestReport } from '../types';
 
 interface ReportsProps {
   reports: Report[];
@@ -12,11 +12,23 @@ const ReportRow: React.FC<{report: Report, onDetailClick: () => void}> = ({repor
     if (report.type === '非功能精准测试') {
         conclusion = (report as PrecisionTestReport).conclusion;
         conclusionClass = conclusion === '通过' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
-    } else if (report.type === '变更风险评估') {
-        conclusion = report.riskLevel + '风险';
-        conclusionClass = { '高': 'bg-red-100 text-red-800', '中': 'bg-amber-100 text-amber-800', '低': 'bg-slate-100 text-slate-800'}[report.riskLevel];
+    } else if (report.type === '可靠性测试') {
+        const reliabilityReport = report as ReliabilityTestReport;
+        const p0Issues = reliabilityReport.stats.p0Issues;
+        const p1Issues = reliabilityReport.findings.filter(f => f.priority === 'P1').length;
+        
+        if (p0Issues > 0) {
+            conclusion = `发现 ${p0Issues} 个严重问题`;
+            conclusionClass = 'bg-red-100 text-red-800';
+        } else if (p1Issues > 0) {
+            conclusion = `发现 ${p1Issues} 个高危问题`;
+            conclusionClass = 'bg-amber-100 text-amber-800';
+        } else {
+            conclusion = `健康度 ${reliabilityReport.health}%`;
+            conclusionClass = 'bg-emerald-100 text-emerald-800';
+        }
     } else {
-        conclusion = `健康度 ${report.health}%`;
+        conclusion = 'N/A';
         conclusionClass = 'bg-slate-100 text-slate-800';
     }
 
