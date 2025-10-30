@@ -18,9 +18,9 @@ export const NAV_ITEMS = [
 ];
 
 export const AGENTS: Agent[] = [
-    { id: 'agent-1', name: '支付模块守护者 (负责人)', status: 'running', repo: 'payment-service', role: '技术债治理', lastScan: '2小时前', p0Issues: 8, p1Issues: 23, health: 72 },
-    { id: 'agent-2', name: '前端代码卫士 (开发者)', status: 'scanning', repo: 'web-frontend', role: '技术债治理', lastScan: '正在扫描... 35%', p0Issues: 2, p1Issues: 5, health: 91 },
-    { id: 'agent-3', name: '订单系统监护 (架构师)', status: 'running', repo: 'order-service', role: '技术债治理', lastScan: '1天前', p0Issues: 1, p1Issues: 4, health: 88 },
+    { id: 'agent-1', name: '电商平台V3上线验收测试', status: 'running', repo: 'payment-service', role: '项目上线', lastScan: '3小时前', p0Issues: 5, p1Issues: 18, health: 78 },
+    { id: 'agent-2', name: '订单服务-精准测试', status: 'scanning', repo: 'order-service', role: '非功能精准测试', lastScan: '正在扫描... 68%', p0Issues: 1, p1Issues: 7, health: 92 },
+    { id: 'agent-3', name: '前端团队-回归测试', status: 'idle', repo: 'web-frontend', role: '非功能回归测试', lastScan: '1天前', p0Issues: 0, p1Issues: 3, health: 95 },
 ];
 
 export const REPOSITORIES: Repository[] = [
