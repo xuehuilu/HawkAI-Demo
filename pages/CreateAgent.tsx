@@ -82,22 +82,20 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
   };
 
   return (
-    <div className="h-full flex flex-col md:flex-row bg-slate-50">
+    <div className="h-full grid grid-cols-1 md:grid-cols-[320px_1fr] lg:grid-cols-[384px_1fr]">
         {/* Left Panel: Stepper and Info */}
-        <aside className="w-full md:w-72 lg:w-80 flex-shrink-0 bg-white md:border-r border-b md:border-b-0 border-slate-200 p-6 flex flex-col">
+        <aside className="bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 lg:p-8 flex flex-col">
             <h1 className="text-2xl font-bold text-slate-800">{agentToEdit ? `编辑 Agent` : '创建新Agent'}</h1>
             <p className="mt-1 text-sm text-slate-500 mb-6">{agentToEdit ? agentToEdit.name : '通过以下步骤配置你的智能代码分析助手'}</p>
-            <div className="md:overflow-y-auto md:pr-2 md:-mr-4">
+            <div className="flex-1 overflow-y-auto -mr-4 pr-4">
                 <WizardStepper currentStep={currentStep} goToStep={goToStep} />
             </div>
         </aside>
 
         {/* Right Panel: Step Content */}
-        <main className="flex-1 min-w-0 flex flex-col">
-            <div className="flex-1 overflow-y-auto">
-                <div className="max-w-4xl mx-auto p-6 sm:p-8 lg:p-10">
-                    {renderStepContent()}
-                </div>
+        <main className="overflow-y-auto bg-slate-50">
+            <div className="max-w-4xl mx-auto p-6 sm:p-8 lg:p-10">
+                {renderStepContent()}
             </div>
         </main>
     </div>
@@ -394,21 +392,22 @@ const Step3_Scenario: React.FC<{ onNext: () => void, onPrev: () => void }> = ({ 
         <div>
             <h2 className="text-xl font-bold text-slate-800">🎯 选择分析场景</h2>
             <p className="mt-1 text-sm text-slate-500 mb-6">根据你的需求选择Agent的工作模式。</p>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                  <ScenarioCard icon="🔧" title="技术债治理" description="持续监控和改善代码质量，关注累积的技术风险和长期债务。" features={['全量代码分析', '热点文件识别', '定期巡检报告']} selected={selectedScenario === 'tech-debt'} onClick={() => setSelectedScenario('tech-debt')} />
                  <ScenarioCard icon="📊" title="变更风险评估" description="深度分析每次代码变更的影响范围和潜在风险，预防生产事故。" features={['变更影响分析', '依赖关系追踪', '风险等级评估']} selected={selectedScenario === 'change-risk'} onClick={() => setSelectedScenario('change-risk')} />
+                 <ScenarioCard icon="🏆" title="项目验收" description="在项目上线前进行全面代码审查，确保符合质量标准和规范。" features={['编码规范检查', '安全漏洞扫描', '代码重复率检测']} selected={selectedScenario === 'project-acceptance'} onClick={() => setSelectedScenario('project-acceptance')} />
             </div>
             <ActionButtons onNext={onNext} onPrev={onPrev} />
         </div>
     );
 };
 const ScenarioCard: React.FC<{icon: string, title: string, description: string, features: string[], selected: boolean, onClick: () => void}> = ({ icon, title, description, features, selected, onClick}) => (
-    <div onClick={onClick} className={`p-6 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
+    <div onClick={onClick} className={`p-6 border-2 rounded-lg cursor-pointer transition-all h-full flex flex-col ${selected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
         <div className="flex items-center gap-3 mb-3">
             <div className="text-3xl">{icon}</div>
             <h3 className="font-bold text-slate-800">{title}</h3>
         </div>
-        <p className="text-xs text-slate-500 mb-3">{description}</p>
+        <p className="text-xs text-slate-500 mb-3 flex-1">{description}</p>
         <ul className="space-y-1 text-xs text-slate-600">
             {features.map(f => <li key={f} className="flex items-center gap-2"><span>✓</span> {f}</li>)}
         </ul>

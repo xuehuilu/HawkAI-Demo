@@ -31,7 +31,8 @@ const App: React.FC = () => {
   const handleAddAgent = useCallback((newAgentData: { name: string; scenario: Scenario; source: { repos: string[] } }) => {
     const scenarioMap = {
         'tech-debt': '技术债治理',
-        'change-risk': '变更风险评估'
+        'change-risk': '变更风险评估',
+        'project-acceptance': '项目验收'
     };
     
     const repoName = REPOSITORIES.find(r => r.id === newAgentData.source.repos[0])?.name || 'unknown-repo';

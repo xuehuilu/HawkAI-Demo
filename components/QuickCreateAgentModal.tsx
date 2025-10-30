@@ -78,6 +78,7 @@ export const QuickCreateAgentModal: React.FC<QuickCreateAgentModalProps> = ({ is
                     <div className="grid grid-cols-1 gap-4">
                         <ScenarioCard icon="🔧" title="技术债治理" description="持续监控和改善代码质量" selected={selectedScenario === 'tech-debt'} onClick={() => setSelectedScenario('tech-debt')} />
                         <ScenarioCard icon="📊" title="变更风险评估" description="深度分析每次代码变更的影响" selected={selectedScenario === 'change-risk'} onClick={() => setSelectedScenario('change-risk')} />
+                        <ScenarioCard icon="🏆" title="项目验收" description="在项目上线前进行全面代码审查" selected={selectedScenario === 'project-acceptance'} onClick={() => setSelectedScenario('project-acceptance')} />
                    </div>
                 );
             case 3:

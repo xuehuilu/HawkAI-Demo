@@ -33,7 +33,7 @@ export interface Repository {
 
 export type Role = 'developer' | 'tech-lead' | 'architect';
 
-export type Scenario = 'tech-debt' | 'change-risk';
+export type Scenario = 'tech-debt' | 'change-risk' | 'project-acceptance';
 
 export type Preference = 'stability' | 'risk' | 'balanced';
 
