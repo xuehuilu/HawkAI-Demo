@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PageHeader } from '../components/PageHeader';
-import { Page, Role } from '../types';
+import { Page } from '../types';
 import type { Report, TechnicalDebtReport, ChangeRiskReport, Issue } from '../types';
 
 interface ReportDetailProps {
@@ -27,26 +27,6 @@ const IssueRow: React.FC<{issue: Issue}> = ({ issue }) => (
 
 // --- Role-based Views for Technical Debt Report ---
 
-const RoleSwitcher: React.FC<{ currentRole: Role; onRoleChange: (role: Role) => void }> = ({ currentRole, onRoleChange }) => (
-  <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-auto">
-    {(['developer', 'tech-lead', 'architect'] as Role[]).map(role => (
-      <button
-        key={role}
-        onClick={() => onRoleChange(role)}
-        className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${
-          currentRole === role
-            ? 'bg-white text-indigo-600 shadow-sm'
-            : 'text-slate-600 hover:bg-white/60'
-        }`}
-      >
-        {role === 'developer' && '👨‍💻 开发者视角'}
-        {role === 'tech-lead' && '👔 技术负责人视角'}
-        {role === 'architect' && '🏗️ 架构师视角'}
-      </button>
-    ))}
-  </div>
-);
-
 const DeveloperView: React.FC<{report: TechnicalDebtReport}> = ({ report }) => {
     const myIssues = report.newIssuesList.filter(i => i.priority === 'P0' || i.priority === 'P1');
     return (
@@ -65,7 +45,13 @@ const DeveloperView: React.FC<{report: TechnicalDebtReport}> = ({ report }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {myIssues.map(issue => <IssueRow key={issue.id} issue={issue} />)}
+                            {myIssues.length > 0 ? (
+                                myIssues.map(issue => <IssueRow key={issue.id} issue={issue} />)
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="text-center py-10 text-slate-500">🎉 恭喜！没有需要你立即处理的高优问题。</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -138,10 +124,10 @@ const TechLeadView: React.FC<{report: TechnicalDebtReport}> = ({ report }) => (
 );
 
 const ArchitectView: React.FC<{report: TechnicalDebtReport}> = ({ report }) => {
-    // Mock data for demonstration
+    // Mock data for demonstration, in a real scenario this would come from the report object itself.
     const architectData = {
         concerns: [
-            { title: '循环依赖', description: '`payment-service` 和 `order-service` 之间检测到循环依赖，破坏了分层架构。', severity: 'High' },
+            { title: '循环依赖', description: `在 ${report.repoName} 中，'service' 层和 'repository' 层之间检测到循环依赖，破坏了分层架构。`, severity: 'High' },
             { title: '核心组件过度耦合', description: '`common-utils` 模块与多个业务模块存在双向依赖，建议重构为单向依赖。', severity: 'Medium' },
         ],
         duplication: [
@@ -204,17 +190,15 @@ const ArchitectView: React.FC<{report: TechnicalDebtReport}> = ({ report }) => {
 // --- Main Components ---
 
 const TechnicalDebtDetail: React.FC<{report: TechnicalDebtReport}> = ({ report }) => {
-    const [currentRole, setCurrentRole] = useState<Role>('tech-lead');
-    return (
-        <div className="space-y-6">
-            <div className="flex justify-center">
-                <RoleSwitcher currentRole={currentRole} onRoleChange={setCurrentRole} />
-            </div>
-             {currentRole === 'developer' && <DeveloperView report={report} />}
-             {currentRole === 'tech-lead' && <TechLeadView report={report} />}
-             {currentRole === 'architect' && <ArchitectView report={report} />}
-        </div>
-    );
+    switch (report.createdByRole) {
+        case 'developer':
+            return <DeveloperView report={report} />;
+        case 'architect':
+            return <ArchitectView report={report} />;
+        case 'tech-lead':
+        default:
+            return <TechLeadView report={report} />;
+    }
 };
 
 const ChangeRiskDetail: React.FC<{report: ChangeRiskReport}> = ({ report }) => {

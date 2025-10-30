@@ -79,6 +79,7 @@ interface BaseReport {
     repoName: string;
     date: string;
     stats: ReportStat;
+    createdByRole: Role;
 }
 
 export interface TechnicalDebtReport extends BaseReport {

@@ -17,9 +17,9 @@ export const NAV_ITEMS = [
 ];
 
 export const AGENTS: Agent[] = [
-    { id: 'agent-1', name: '支付模块守护者', status: 'running', repo: 'payment-service', role: '技术债治理', lastScan: '2小时前', p0Issues: 8, p1Issues: 23, health: 72 },
-    { id: 'agent-2', name: '前端代码卫士', status: 'scanning', repo: 'web-frontend', role: '版本发布门禁', lastScan: '正在扫描... 35%', p0Issues: 2, p1Issues: 12, health: 85 },
-    { id: 'agent-3', name: '订单系统监护', status: 'running', repo: 'order-service', role: '变更风险评估', lastScan: '1天前', p0Issues: 3, p1Issues: 15, health: 78 },
+    { id: 'agent-1', name: '支付模块守护者 (负责人)', status: 'running', repo: 'payment-service', role: '技术债治理', lastScan: '2小时前', p0Issues: 8, p1Issues: 23, health: 72 },
+    { id: 'agent-2', name: '前端代码卫士 (开发者)', status: 'scanning', repo: 'web-frontend', role: '技术债治理', lastScan: '正在扫描... 35%', p0Issues: 2, p1Issues: 5, health: 91 },
+    { id: 'agent-3', name: '订单系统监护 (架构师)', status: 'running', repo: 'order-service', role: '技术债治理', lastScan: '1天前', p0Issues: 1, p1Issues: 4, health: 88 },
 ];
 
 export const REPOSITORIES: Repository[] = [
@@ -93,7 +93,7 @@ export const LEARNED_RULES: LearnedRule[] = [
 export const REPORTS: Report[] = [
     {
         id: 'report-1',
-        title: '支付模块守护者 - 技术债周报',
+        title: '支付模块守护者 - 技术债周报 (负责人视图)',
         type: '技术债治理',
         icon: '🔧',
         agentName: '支付模块守护者',
@@ -111,6 +111,48 @@ export const REPORTS: Report[] = [
             { id: 'i2', priority: 'P1', file: 'TransactionManager.java', description: '事务中捕获异常未回滚 - 可能导致数据不一致' },
             { id: 'i3', priority: 'P2', file: 'RefundController.java', description: '使用SELECT *查询' },
         ],
+        createdByRole: 'tech-lead',
+    },
+    {
+        id: 'report-3',
+        title: '前端代码卫士 - 高优问题修复清单 (开发者视图)',
+        type: '技术债治理',
+        icon: '👨‍💻',
+        agentName: '前端代码卫士',
+        repoName: 'web-frontend',
+        date: '2025-10-27',
+        stats: { newIssues: 3, fixedIssues: 10, healthChange: 5, p0Issues: 1 },
+        health: 91,
+        hotspotFiles: [
+            { file: 'components/checkout/Form.tsx', issueCount: 2 },
+            { file: 'utils/currency.ts', issueCount: 1 },
+        ],
+        newIssuesList: [
+            { id: 'd1', priority: 'P0', file: 'components/checkout/Form.tsx', description: '未处理的Promise拒绝可能导致页面崩溃' },
+            { id: 'd2', priority: 'P1', file: 'components/checkout/Form.tsx', description: 'useEffect存在无限循环依赖' },
+            { id: 'd3', priority: 'P1', file: 'utils/currency.ts', description: '大数计算可能导致精度丢失' },
+        ],
+        createdByRole: 'developer',
+    },
+     {
+        id: 'report-4',
+        title: '订单系统监护 - 系统风险评估 (架构师视图)',
+        type: '技术债治理',
+        icon: '🏗️',
+        agentName: '订单系统监护',
+        repoName: 'order-service',
+        date: '2025-10-27',
+        stats: { newIssues: 2, fixedIssues: 0, healthChange: -1, p0Issues: 0 },
+        health: 88,
+        hotspotFiles: [
+            { file: 'service/OrderCreationService.java', issueCount: 1 },
+            { file: 'repository/OrderRepository.java', issueCount: 1 },
+        ],
+        newIssuesList: [
+            { id: 'a1', priority: 'P1', file: 'service/OrderCreationService.java', description: '与库存服务存在循环依赖风险' },
+            { id: 'a2', priority: 'P2', file: 'repository/OrderRepository.java', description: '技术栈风险：使用了即将废弃的数据库驱动版本' },
+        ],
+        createdByRole: 'architect',
     },
     {
         id: 'report-2',
@@ -131,6 +173,7 @@ export const REPORTS: Report[] = [
             { id: 'i4', priority: 'P1', file: 'OrderController.java', description: '未对用户输入进行充分校验' },
             { id: 'i5', priority: 'P2', file: 'OrderService.java', description: '方法圈复杂度过高' },
             { id: 'i6', priority: 'P2', file: 'OrderService.java', description: '硬编码了超时时间' },
-        ]
+        ],
+        createdByRole: 'tech-lead',
     },
 ];
