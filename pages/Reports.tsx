@@ -1,47 +1,51 @@
 import React from 'react';
 import { PageHeader } from '../components/PageHeader';
-import type { Report } from '../types';
+import type { Report, PrecisionTestReport } from '../types';
 
 interface ReportsProps {
   reports: Report[];
   viewReportDetail: (reportId: string) => void;
 }
 
-const ReportStat: React.FC<{label: string, value: string | number, color?: string}> = ({label, value, color = 'text-slate-800'}) => (
-    <div className="text-center">
-        <p className={`text-2xl font-bold ${color}`}>{value}</p>
-        <p className="text-xs text-slate-500">{label}</p>
-    </div>
-);
+const ReportRow: React.FC<{report: Report, onDetailClick: () => void}> = ({report, onDetailClick}) => {
+    let conclusion, conclusionClass;
+    if (report.type === '非功能精准测试') {
+        conclusion = (report as PrecisionTestReport).conclusion;
+        conclusionClass = conclusion === '通过' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800';
+    } else if (report.type === '变更风险评估') {
+        conclusion = report.riskLevel + '风险';
+        conclusionClass = { '高': 'bg-red-100 text-red-800', '中': 'bg-amber-100 text-amber-800', '低': 'bg-slate-100 text-slate-800'}[report.riskLevel];
+    } else {
+        conclusion = `健康度 ${report.health}%`;
+        conclusionClass = 'bg-slate-100 text-slate-800';
+    }
 
-const ReportCard: React.FC<{report: Report, onDetailClick: () => void}> = ({report, onDetailClick}) => {
-    const healthChange = report.stats.healthChange;
-    const healthColor = healthChange > 0 ? 'text-emerald-500' : healthChange < 0 ? 'text-red-500' : 'text-slate-500';
 
     return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-            <div className="flex justify-between items-start mb-4">
-                <div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-2xl">{report.icon}</span>
-                        <h2 className="text-lg font-bold text-slate-800">{report.title}</h2>
+        <tr className="border-b border-slate-200 hover:bg-slate-50">
+            <td className="p-4">
+                <div className="flex items-center gap-3">
+                    <span className="text-xl">{report.icon}</span>
+                    <div>
+                        <a href="#" onClick={(e) => { e.preventDefault(); onDetailClick(); }} className="font-bold text-slate-800 hover:text-indigo-600">{report.title}</a>
+                        <p className="text-xs text-slate-500">{report.agentName}</p>
                     </div>
-                     <p className="text-xs text-slate-500 mt-1 ml-9">
-                        <span className="font-semibold">{report.type}</span> | <span>{report.agentName}</span> | <span className="font-mono">{report.repoName}</span>
-                    </p>
                 </div>
-                <p className="text-xs text-slate-400 flex-shrink-0">{report.date}</p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-slate-200">
-                <ReportStat label="新增问题" value={report.stats.newIssues} color="text-amber-600" />
-                <ReportStat label="修复问题" value={report.stats.fixedIssues} color="text-emerald-600" />
-                <ReportStat label="健康度变化" value={`${healthChange > 0 ? '+' : ''}${healthChange}%`} color={healthColor} />
-                <ReportStat label="P0 问题" value={report.stats.p0Issues} color="text-red-600" />
-            </div>
-            <div className="mt-4 flex justify-end">
-                <button onClick={onDetailClick} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">查看详情 →</button>
-            </div>
-        </div>
+            </td>
+            <td className="p-4 text-sm text-slate-600">{report.type}</td>
+            <td className="p-4 text-sm text-slate-600 font-mono">{report.repoName}</td>
+            <td className="p-4">
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${conclusionClass}`}>
+                    {conclusion}
+                </span>
+            </td>
+            <td className="p-4 text-sm text-slate-500">{report.date}</td>
+            <td className="p-4 text-center">
+                <button onClick={onDetailClick} className="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                    查看详情
+                </button>
+            </td>
+        </tr>
     );
 };
 
@@ -51,10 +55,26 @@ export const Reports: React.FC<ReportsProps> = ({ reports, viewReportDetail }) =
     <div>
       <PageHeader title="我的报告" subtitle="查看所有代码分析报告" />
       <div className="p-6 sm:p-8">
-        <div className="space-y-6">
-            {reports.map(report => (
-                <ReportCard key={report.id} report={report} onDetailClick={() => viewReportDetail(report.id)} />
-            ))}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="border-b border-slate-300 bg-slate-50 text-xs text-slate-500 uppercase">
+                            <th className="p-4 font-semibold">报告名称</th>
+                            <th className="p-4 font-semibold">测试类型</th>
+                            <th className="p-4 font-semibold">测试对象</th>
+                            <th className="p-4 font-semibold">结论</th>
+                            <th className="p-4 font-semibold">执行日期</th>
+                            <th className="p-4 font-semibold text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {reports.map(report => (
+                            <ReportRow key={report.id} report={report} onDetailClick={() => viewReportDetail(report.id)} />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
       </div>
     </div>

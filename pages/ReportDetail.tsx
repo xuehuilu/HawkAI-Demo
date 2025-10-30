@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Page } from '../types';
-import type { Report, TechnicalDebtReport, ChangeRiskReport, Issue } from '../types';
-
-interface ReportDetailProps {
-  report: Report;
-  navigateTo: (page: Page) => void;
-}
+import type { Report, TechnicalDebtReport, ChangeRiskReport, Issue, PrecisionTestReport } from '../types';
 
 const priorityClasses: {[key in Issue['priority']]: string} = {
     P0: 'bg-red-500 text-white',
@@ -352,7 +347,7 @@ const MasterView: React.FC<{ report: TechnicalDebtReport }> = ({ report }) => (
 );
 
 
-// --- Main Components ---
+// --- Main Report Components ---
 
 const TechnicalDebtDetail: React.FC<{report: TechnicalDebtReport}> = ({ report }) => {
     const [viewMode, setViewMode] = useState<'role' | 'master'>('role');
@@ -426,7 +421,142 @@ const ChangeRiskDetail: React.FC<{report: ChangeRiskReport}> = ({ report }) => {
     );
 }
 
+// --- NEW: Precision Test Report Detail ---
+const KpiCard: React.FC<{label: string, value: string, trend?: string, trendColor?: string, icon: string}> = ({label, value, trend, trendColor, icon}) => (
+    <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+        <div className="flex justify-between items-start">
+            <span className="text-sm font-semibold text-slate-600">{label}</span>
+            <span className="text-xl">{icon}</span>
+        </div>
+        <div className="mt-2 flex items-baseline gap-2">
+             <p className="text-3xl font-bold text-slate-800">{value}</p>
+             {trend && <p className={`text-sm font-bold ${trendColor}`}>{trend}</p>}
+        </div>
+    </div>
+);
+
+const ChartPlaceholder: React.FC<{title: string}> = ({ title }) => (
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <h4 className="font-bold text-slate-700 mb-2 text-sm">{title}</h4>
+        <div className="h-48 flex items-center justify-center text-slate-400 text-xs">
+            图表加载中...
+        </div>
+    </div>
+);
+
+const PrecisionTestDetail: React.FC<{report: PrecisionTestReport}> = ({ report }) => {
+    const { kpis, testInfo, bottlenecks, transactionDetails } = report;
+    const conclusionColor = report.conclusion === '通过' ? 'bg-emerald-500' : 'bg-red-500';
+    const trendColor = (kpis.avgResponseTime.trend ?? 0) > 0 ? 'text-red-500' : 'text-emerald-500';
+    
+    return (
+        <div className="space-y-6">
+            {/* KPIs */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className={`p-4 rounded-lg text-white text-center flex flex-col justify-center items-center col-span-2 lg:col-span-1 ${conclusionColor}`}>
+                    <span className="text-sm">测试结论</span>
+                    <span className="text-3xl font-bold">{report.conclusion}</span>
+                </div>
+                <KpiCard label="平均响应时间" value={`${kpis.avgResponseTime.value}${kpis.avgResponseTime.unit}`} trend={`${(kpis.avgResponseTime.trend ?? 0) > 0 ? '+' : ''}${kpis.avgResponseTime.trend}ms`} trendColor={trendColor} icon="⏱️" />
+                <KpiCard label="P99响应时间" value={`${kpis.p99ResponseTime.value}${kpis.p99ResponseTime.unit}`} icon="🐢" />
+                <KpiCard label="TPS" value={`${kpis.tps.value}${kpis.tps.unit}`} icon="🚀" />
+                <KpiCard label="成功率" value={`${kpis.successRate.value}${kpis.successRate.unit}`} icon="✅" />
+            </div>
+
+            {/* Charts */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">性能曲线</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <ChartPlaceholder title="响应时间 (Avg/P95/P99)" />
+                    <ChartPlaceholder title="TPS (每秒事务数)" />
+                    <ChartPlaceholder title="并发用户数" />
+                </div>
+            </div>
+
+            {/* Test Info & Bottlenecks */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4">测试场景</h3>
+                    <ul className="space-y-2 text-sm">
+                        <li className="flex justify-between"><span className="text-slate-500">持续时长:</span> <span className="font-semibold text-slate-700">{testInfo.duration}</span></li>
+                        <li className="flex justify-between"><span className="text-slate-500">并发用户数:</span> <span className="font-semibold text-slate-700">{testInfo.concurrency}</span></li>
+                        <li className="flex justify-between"><span className="text-slate-500">预热时间:</span> <span className="font-semibold text-slate-700">{testInfo.rampUp}</span></li>
+                        <li className="flex justify-between"><span className="text-slate-500">测试目标:</span> <span className="font-semibold text-slate-700 font-mono text-xs">{testInfo.target}</span></li>
+                    </ul>
+                </div>
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4">性能瓶颈分析</h3>
+                    <ul className="space-y-3">
+                        {bottlenecks.map(b => (
+                             <li key={b.id} className={`p-3 rounded-lg border-l-4 ${b.priority === 'P0' ? 'border-red-500 bg-red-50' : 'border-amber-500 bg-amber-50'}`}>
+                                <p className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                    <span className={`px-1.5 py-0.5 text-xs font-bold rounded ${priorityClasses[b.priority]}`}>{b.priority}</span>
+                                    {b.description}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-1"><strong>影响组件:</strong> <span className="font-mono">{b.component}</span></p>
+                                <p className="text-xs text-slate-500"><strong>建议:</strong> {b.suggestion}</p>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+            
+            {/* Transaction Details */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                 <h3 className="text-lg font-bold text-slate-800 mb-4">详细事务数据</h3>
+                 <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="border-b border-slate-300 bg-slate-50 text-xs text-slate-500 uppercase">
+                                <th className="p-3 font-semibold">事务/API</th>
+                                <th className="p-3 font-semibold text-right">请求数</th>
+                                <th className="p-3 font-semibold text-right">Avg (ms)</th>
+                                <th className="p-3 font-semibold text-right">P95 (ms)</th>
+                                <th className="p-3 font-semibold text-right">P99 (ms)</th>
+                                <th className="p-3 font-semibold text-right">成功率 (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {transactionDetails.map(t => (
+                                <tr key={t.id} className="border-b border-slate-200 hover:bg-slate-50 text-sm">
+                                    <td className="p-3 font-mono text-slate-700">{t.endpoint}</td>
+                                    <td className="p-3 text-right text-slate-600">{t.requests.toLocaleString()}</td>
+                                    <td className="p-3 text-right text-slate-600">{t.avg}</td>
+                                    <td className="p-3 text-right text-slate-600">{t.p95}</td>
+                                    <td className="p-3 text-right font-bold text-slate-800">{t.p99}</td>
+                                    <td className="p-3 text-right font-bold">{t.errorRate > 0 ? <span className="text-red-600">{100 - t.errorRate}</span> : <span className="text-emerald-600">100.00</span>}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    );
+};
+
+// @google/genai-api-fix: Add ReportDetailProps interface definition to fix type error.
+interface ReportDetailProps {
+  report: Report;
+  navigateTo: (page: Page) => void;
+}
+
 export const ReportDetail: React.FC<ReportDetailProps> = ({ report, navigateTo }) => {
+    
+  const renderReportContent = () => {
+    switch(report.type) {
+        case '技术债治理':
+            return <TechnicalDebtDetail report={report as TechnicalDebtReport} />;
+        case '变更风险评估':
+            return <ChangeRiskDetail report={report as ChangeRiskReport} />;
+        case '非功能精准测试':
+            return <PrecisionTestDetail report={report as PrecisionTestReport} />;
+        default:
+            return <p>未知的报告类型</p>;
+    }
+  }
+
   return (
     <div>
         <PageHeader title={report.title} subtitle={`${report.type} | ${report.date}`}>
@@ -436,10 +566,7 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({ report, navigateTo }
             </button>
         </PageHeader>
         <div className="p-6 sm:p-8">
-            {report.type === '技术债治理' 
-                ? <TechnicalDebtDetail report={report as TechnicalDebtReport} />
-                : <ChangeRiskDetail report={report as ChangeRiskReport} />
-            }
+            {renderReportContent()}
         </div>
     </div>
   );

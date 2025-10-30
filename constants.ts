@@ -1,5 +1,6 @@
 // @google/genai-api-fix: Add Issue to type import
-import type { Agent, Repository, Rule, LearnedRule, Report, TechnicalDebtReport, Issue } from './types';
+// @google/genai-api-fix: Add BaseReport to type import to fix type errors.
+import type { Agent, Repository, Rule, LearnedRule, Report, TechnicalDebtReport, Issue, PrecisionTestReport, BaseReport } from './types';
 import { Page } from './types';
 
 export const NAV_ITEMS = [
@@ -18,7 +19,7 @@ export const NAV_ITEMS = [
 ];
 
 export const AGENTS: Agent[] = [
-    { id: 'agent-1', name: '电商平台V3上线验收测试', status: 'running', repo: 'payment-service', role: '项目上线', lastScan: '3小时前', p0Issues: 5, p1Issues: 18, health: 78 },
+    { id: 'agent-1', name: '电商平台V3上线-性能压测', status: 'running', repo: 'payment-service', role: '项目上线', lastScan: '3小时前', p0Issues: 5, p1Issues: 18, health: 78 },
     { id: 'agent-2', name: '订单服务-精准测试', status: 'scanning', repo: 'order-service', role: '非功能精准测试', lastScan: '正在扫描... 68%', p0Issues: 1, p1Issues: 7, health: 92 },
     { id: 'agent-3', name: '前端团队-回归测试', status: 'idle', repo: 'web-frontend', role: '非功能回归测试', lastScan: '1天前', p0Issues: 0, p1Issues: 3, health: 95 },
 ];
@@ -135,8 +136,46 @@ const TECHNICAL_DEBT_MASTER_DATA: {
     ]
 };
 
+// Data for the new Precision Test Report
+const PRECISION_TEST_REPORT_DATA: Omit<PrecisionTestReport, keyof Omit<BaseReport, 'stats'>> & { stats: Report['stats'] } = {
+    type: '非功能精准测试',
+    conclusion: '不通过',
+    stats: { newIssues: 2, fixedIssues: 0, healthChange: 0, p0Issues: 1 },
+    kpis: {
+        avgResponseTime: { value: 850, unit: 'ms', trend: 150 },
+        p99ResponseTime: { value: 2500, unit: 'ms' },
+        tps: { value: 520, unit: '/s' },
+        successRate: { value: 99.8, unit: '%' },
+    },
+    testInfo: {
+        duration: '15 分钟',
+        concurrency: 500,
+        rampUp: '5 分钟',
+        target: '/api/v2/order/create',
+    },
+    bottlenecks: [
+        { id: 'b1', priority: 'P0', description: '数据库连接池耗尽导致大量请求超时', component: 'OrderRepository.java', suggestion: '增加数据库连接池大小，并排查慢SQL查询。' },
+        { id: 'b2', priority: 'P1', description: 'GC活动频繁导致应用STW（Stop-The-World）', component: 'JVM anagement', suggestion: '优化内存分配，调整JVM垃圾回收器参数。' },
+    ],
+    transactionDetails: [
+        { id: 't1', endpoint: '/api/v2/order/create', requests: 450000, avg: 850, p95: 1800, p99: 2500, errorRate: 0.2 },
+        { id: 't2', endpoint: '/api/v2/order/query', requests: 120000, avg: 120, p95: 250, p99: 400, errorRate: 0 },
+        { id: 't3', endpoint: '/api/v2/user/profile', requests: 800000, avg: 50, p95: 90, p99: 150, errorRate: 0 },
+    ]
+};
+
 
 export const REPORTS: Report[] = [
+    {
+        id: 'report-5',
+        title: '订单服务 - 精准测试报告',
+        icon: '🎯',
+        agentName: '订单服务-精准测试',
+        repoName: 'order-service',
+        date: '2025-11-05',
+        createdByRole: 'tech-lead',
+        ...PRECISION_TEST_REPORT_DATA,
+    },
     {
         id: 'report-1',
         title: '支付模块守护者 - 技术债周报 (负责人视图)',

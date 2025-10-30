@@ -79,7 +79,7 @@ interface BaseReport {
     agentName: string;
     repoName: string;
     date: string;
-    stats: ReportStat;
+    stats: ReportStat; // Kept for list view consistency, but detail view might use specific KPIs
     createdByRole: Role;
 }
 
@@ -105,4 +105,39 @@ export interface ChangeRiskReport extends BaseReport {
     newIssuesList: Issue[];
 }
 
-export type Report = TechnicalDebtReport | ChangeRiskReport;
+// New Precision Test Report
+export interface PrecisionTestReport extends BaseReport {
+    type: '非功能精准测试';
+    conclusion: '通过' | '不通过';
+    kpis: {
+        avgResponseTime: { value: number; unit: 'ms'; trend?: number };
+        p99ResponseTime: { value: number; unit: 'ms' };
+        tps: { value: number; unit: '/s' };
+        successRate: { value: number; unit: '%' };
+    };
+    testInfo: {
+        duration: string;
+        concurrency: number;
+        rampUp: string;
+        target: string;
+    };
+    bottlenecks: {
+        id: string;
+        priority: 'P0' | 'P1';
+        description: string;
+        component: string;
+        suggestion: string;
+    }[];
+    transactionDetails: {
+        id: string;
+        endpoint: string;
+        requests: number;
+        avg: number;
+        p95: number;
+        p99: number;
+        errorRate: number;
+    }[];
+}
+
+
+export type Report = TechnicalDebtReport | ChangeRiskReport | PrecisionTestReport;
