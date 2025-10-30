@@ -65,6 +65,8 @@ export interface ReportStat {
     p0Issues: number;
 }
 
+export type FindingFeedbackStatus = 'pending' | 'accepted' | 'rejected';
+
 // A Finding from a reliability test
 export interface Finding {
     id: string;
@@ -78,6 +80,7 @@ export interface Finding {
     codeSnippet?: string;
     affectedModules?: string[];
     affectedApis?: string[];
+    feedbackStatus?: FindingFeedbackStatus;
 }
 
 

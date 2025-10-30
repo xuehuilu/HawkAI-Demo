@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { Page } from '../types';
-import type { Report, PrecisionTestReport, ReliabilityTestReport, Finding } from '../types';
+import type { Report, PrecisionTestReport, ReliabilityTestReport, Finding, FindingFeedbackStatus } from '../types';
 
 
 const KpiCard: React.FC<{label: string, value: string, trend?: string, trendColor?: string, icon: string}> = ({label, value, trend, trendColor, icon}) => (
@@ -221,7 +221,8 @@ const FindingDetailModal: React.FC<{ finding: Finding | null; onClose: () => voi
                 <div className="p-4 bg-white border-t border-slate-200 flex justify-end gap-3 rounded-b-xl flex-shrink-0">
                     <button
                         onClick={() => alert(`问题 '${finding.id}' 已同步到Jira项目 'PROJ-123'。`)}
-                        className="bg-white border border-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2"
+                        className="bg-white border border-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={finding.feedbackStatus !== 'accepted'}
                     >
                         <span>🔗</span>
                         <span>同步到Jira</span>
@@ -248,39 +249,111 @@ const FindingPriorityBadge: React.FC<{ priority: Finding['priority'] }> = ({ pri
 };
 
 
-const FindingRow: React.FC<{ finding: Finding, onDetailClick: (finding: Finding) => void }> = ({ finding, onDetailClick }) => (
-    <div className="p-4 border border-slate-200 rounded-lg bg-white hover:shadow-md transition-shadow">
-        <div className="flex items-start gap-4">
-            <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                    <FindingPriorityBadge priority={finding.priority} />
-                    <h4 className="font-semibold text-slate-800">{finding.description}</h4>
-                </div>
-                <div className="text-xs text-slate-500 space-y-1 pl-8">
-                    <p><strong>规范来源：</strong><span className="font-mono">{finding.code}</span></p>
-                    <p><strong>代码位置：</strong><span className="font-mono text-indigo-600">{finding.file}:{finding.line}</span></p>
-                    <div className="pt-1">
-                        <p><strong>修复建议：</strong><span className="text-slate-600">{finding.suggestion}</span></p>
+const FindingRow: React.FC<{ finding: Finding, onDetailClick: (finding: Finding) => void, onFeedback: (id: string, status: FindingFeedbackStatus, reason?: string) => void }> = ({ finding, onDetailClick, onFeedback }) => {
+    const [isRejectionMenuOpen, setIsRejectionMenuOpen] = useState(false);
+    const rejectionMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (rejectionMenuRef.current && !rejectionMenuRef.current.contains(event.target as Node)) {
+                setIsRejectionMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+    
+    const handleReject = (reason: string) => {
+        let reasonText = '';
+        switch(reason) {
+            case 'ignore_once': reasonText = "不需要当前这个规则"; break;
+            case 'ignore_file': reasonText = "当前文件不需要此规则"; break;
+            case 'false_positive': reasonText = "风险是错误的"; break;
+        }
+        onFeedback(finding.id, 'rejected', reasonText);
+        setIsRejectionMenuOpen(false);
+        alert(`反馈已收到: ${reasonText}。Agent将学习此模式。`);
+    };
+
+    const handleAccept = () => {
+        onFeedback(finding.id, 'accepted');
+        alert(`风险已接受。您可以在“查看详情”中将其同步到Jira。`);
+    };
+
+    return (
+        <div className={`p-4 border border-slate-200 rounded-lg bg-white transition-all ${finding.feedbackStatus === 'rejected' ? 'bg-slate-50 opacity-60' : 'hover:shadow-md'}`}>
+            <div className="flex items-start gap-4">
+                <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                        <FindingPriorityBadge priority={finding.priority} />
+                        <h4 className={`font-semibold text-slate-800 ${finding.feedbackStatus === 'rejected' ? 'line-through' : ''}`}>{finding.description}</h4>
+                    </div>
+                    <div className="text-xs text-slate-500 space-y-1 pl-8">
+                        <p><strong>规范来源：</strong><span className="font-mono">{finding.code}</span></p>
+                        <p><strong>代码位置：</strong><span className="font-mono text-indigo-600">{finding.file}:{finding.line}</span></p>
+                        <div className="pt-1">
+                            <p><strong>修复建议：</strong><span className="text-slate-600">{finding.suggestion}</span></p>
+                        </div>
                     </div>
                 </div>
+                <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
+                    {finding.feedbackStatus === 'pending' ? (
+                        <div className="flex items-center gap-2 border-r border-slate-200 pr-3">
+                            <button onClick={handleAccept} className="text-xs font-semibold text-emerald-600 hover:text-emerald-800 p-1 rounded hover:bg-emerald-100 transition-colors">✓ 接受</button>
+                            <div className="relative" ref={rejectionMenuRef}>
+                                <button onClick={() => setIsRejectionMenuOpen(p => !p)} className="text-xs font-semibold text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-100 transition-colors">✕ 拒绝</button>
+                                {isRejectionMenuOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 z-10 py-1">
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('ignore_once'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">不需要当前这个规则</a>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('ignore_file'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">当前文件不需要此规则</a>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('false_positive'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">风险是错误的</a>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="border-r border-slate-200 pr-3">
+                            {finding.feedbackStatus === 'accepted' && <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">✓ 已接受</span>}
+                            {finding.feedbackStatus === 'rejected' && <span className="text-xs font-bold text-slate-500 flex items-center gap-1">✕ 已拒绝</span>}
+                        </div>
+                    )}
+                    <button 
+                        onClick={() => onDetailClick(finding)}
+                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                        查看详情
+                    </button>
+                </div>
             </div>
-            <button 
-                onClick={() => onDetailClick(finding)}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 mt-1 flex-shrink-0">
-                查看详情
-            </button>
         </div>
-    </div>
-);
+    );
+};
 
 const ReliabilityTestDetail: React.FC<{ report: ReliabilityTestReport }> = ({ report }) => {
     const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
-    const { health, findings } = report;
-    const p0Count = findings.filter(f => f.priority === 'P0').length;
-    const p1Count = findings.filter(f => f.priority === 'P1').length;
-    const p2Count = findings.filter(f => f.priority === 'P2').length;
+    const [localFindings, setLocalFindings] = useState<Finding[]>(() => 
+        report.findings.map(f => ({ ...f, feedbackStatus: f.feedbackStatus || 'pending' }))
+    );
 
-    const findingsByCategory = findings.reduce((acc, finding) => {
+    const { health } = report;
+    const p0Count = localFindings.filter(f => f.priority === 'P0').length;
+    const p1Count = localFindings.filter(f => f.priority === 'P1').length;
+    const p2Count = localFindings.filter(f => f.priority === 'P2').length;
+
+    const handleFeedback = (findingId: string, status: FindingFeedbackStatus, reason?: string) => {
+        setLocalFindings(prev => 
+            prev.map(f => f.id === findingId ? { ...f, feedbackStatus: status } : f)
+        );
+        console.log(`Feedback for finding ${findingId}: ${status}, reason: ${reason || 'N/A'}`);
+    };
+    
+    const handleDetailClick = (finding: Finding) => {
+        const currentFindingState = localFindings.find(f => f.id === finding.id);
+        setSelectedFinding(currentFindingState || finding);
+    };
+
+    const findingsByCategory = localFindings.reduce((acc, finding) => {
         if (!acc[finding.category]) {
             acc[finding.category] = [];
         }
@@ -319,7 +392,7 @@ const ReliabilityTestDetail: React.FC<{ report: ReliabilityTestReport }> = ({ re
                         <h3 className="text-lg font-bold text-slate-800 mb-4">{category} ({findings.length}个问题)</h3>
                         <div className="space-y-3">
                             {findings.map(finding => (
-                                <FindingRow key={finding.id} finding={finding} onDetailClick={setSelectedFinding} />
+                                <FindingRow key={finding.id} finding={finding} onDetailClick={handleDetailClick} onFeedback={handleFeedback} />
                             ))}
                         </div>
                     </div>
