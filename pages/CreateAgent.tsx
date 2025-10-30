@@ -11,8 +11,7 @@ const STEPS = [
   { id: 5, title: '工作方式' },
   { id: 6, title: '规则配置' },
   { id: 7, title: '已学习' },
-  { id: 8, title: '工作计划' },
-  { id: 9, title: '完成' },
+  { id: 8, title: '完成' },
 ];
 
 interface CreateAgentProps {
@@ -61,7 +60,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
             repos: selectedRepos,
         }
      });
-    setCurrentStep(9);
+    setCurrentStep(8); // Go to the 'Complete' step
   };
   
   const handleFinish = () => {
@@ -89,9 +88,8 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
       case 4: return <Step4_Scope onNext={nextStep} onPrev={prevStep} />;
       case 5: return <Step5_WorkStyle onNext={nextStep} onPrev={prevStep} />;
       case 6: return <Step6_Rules onNext={nextStep} onPrev={prevStep} />;
-      case 7: return <Step7_Learning onNext={nextStep} onPrev={prevStep} isEditing={!!agentToEdit} />;
-      case 8: return <Step8_Schedule onNext={createAgent} onPrev={prevStep} />;
-      case 9: return <Step9_Complete agentName={agentName || agentToEdit?.name || ''} onFinish={handleFinish} onCreateAnother={handleCreateAnother} />;
+      case 7: return <Step7_Learning onNext={createAgent} onPrev={prevStep} isEditing={!!agentToEdit} />;
+      case 8: return <Step9_Complete agentName={agentName || agentToEdit?.name || ''} onFinish={handleFinish} onCreateAnother={handleCreateAnother} />;
       default: return null;
     }
   };
@@ -515,11 +513,11 @@ const Step5_WorkStyle: React.FC<{ onNext: () => void, onPrev: () => void }> = ({
     return (
         <div>
             <h2 className="text-xl font-bold text-slate-800">⚙️ 工作方式</h2>
-            <p className="mt-1 text-sm text-slate-500 mb-6">告诉Agent如何判断技术债的优先级。</p>
+            <p className="mt-1 text-sm text-slate-500 mb-6">告诉Agent如何确定测试任务的优先级，以最高效地发现潜在问题。</p>
             <div className="space-y-4">
-                <PreferenceCard icon="🔥" title="稳定性优先" description="重点关注频繁变更的文件，避免因改动过多导致不稳定。" selected={preference === 'stability'} onClick={() => setPreference('stability')} />
-                <PreferenceCard icon="🚨" title="风险优先" description="重点关注高危问题，优先消除可能导致生产事故的代码。" selected={preference === 'risk'} onClick={() => setPreference('risk')} />
-                <PreferenceCard icon="⚖️" title="智能平衡（推荐）" description="综合考虑风险、变更频率、业务重要性等多个维度。" selected={preference === 'balanced'} onClick={() => setPreference('balanced')} />
+                <PreferenceCard icon="📈" title="业务优先级优化" description="优先测试核心业务模块，保障关键业务流程的性能与稳定。" selected={preference === 'business'} onClick={() => setPreference('business')} />
+                <PreferenceCard icon="🚨" title="风险影响程度优先" description="优先关注高风险模块与高危漏洞，优先消除可能导致生产事故的风险点。" selected={preference === 'risk-impact'} onClick={() => setPreference('risk-impact')} />
+                <PreferenceCard icon="⚖️" title="智能平衡（推荐）" description="综合考虑业务重要性、风险等级、变更频率等多个维度，智能规划测试优先级。" selected={preference === 'balanced'} onClick={() => setPreference('balanced')} />
             </div>
             <ActionButtons onNext={onNext} onPrev={onPrev} />
         </div>
@@ -725,7 +723,7 @@ const Step7_Learning: React.FC<{ onNext: () => void, onPrev: () => void, isEditi
                 <div className="text-center py-10 text-slate-400 text-sm">
                     这是一个新Agent，还没有学习记录。<br/>随着你的使用，Agent会逐渐学习你的偏好。
                 </div>
-                <ActionButtons onNext={onNext} onPrev={onPrev} />
+                <ActionButtons onNext={onNext} onPrev={onPrev} nextText="创建/保存 Agent" isCreating={true} />
             </div>
         );
     }
@@ -759,48 +757,6 @@ const Step7_Learning: React.FC<{ onNext: () => void, onPrev: () => void, isEditi
                 <button className="text-sm font-semibold text-red-600 hover:text-red-800">清空所有学习记录</button>
             </div>
 
-            <ActionButtons onNext={onNext} onPrev={onPrev} />
-        </div>
-    );
-};
-
-// Step 8: Schedule
-const CheckboxItem: React.FC<{title: string, description: string, isChecked: boolean, onToggle: () => void}> = ({title, description, isChecked, onToggle}) => (
-    <div onClick={onToggle} className="flex items-start gap-4 p-4 rounded-lg cursor-pointer hover:bg-slate-50">
-        <div className={`w-5 h-5 mt-0.5 rounded-md flex-shrink-0 flex items-center justify-center text-white ${isChecked ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-2 border-slate-300'}`}>
-            {isChecked && '✓'}
-        </div>
-        <div>
-            <h4 className="font-semibold text-slate-800">{title}</h4>
-            <p className="text-xs text-slate-500">{description}</p>
-        </div>
-    </div>
-)
-const Step8_Schedule: React.FC<{ onNext: () => void, onPrev: () => void }> = ({ onNext, onPrev }) => {
-    const [schedule, setSchedule] = useState({ commit: true, weekly: true, pr: true });
-    const [notifications, setNotifications] = useState({ p0: true, report: true });
-
-    return (
-        <div>
-            <h2 className="text-xl font-bold text-slate-800">⏰ 工作计划</h2>
-            <p className="mt-1 text-sm text-slate-500 mb-6">设置Agent的巡检时间和触发条件。</p>
-            <div className="space-y-6">
-                <div>
-                    <label className="text-sm font-semibold text-slate-700 block mb-2">自动巡检</label>
-                    <div className="border border-slate-200 rounded-lg divide-y divide-slate-200">
-                        <CheckboxItem title="每次代码提交后" description="增量扫描变更的文件，快速反馈（推荐）。" isChecked={schedule.commit} onToggle={() => setSchedule(s => ({...s, commit: !s.commit}))} />
-                        <CheckboxItem title="每周一早上9点" description="全量复查，生成周度报告。" isChecked={schedule.weekly} onToggle={() => setSchedule(s => ({...s, weekly: !s.weekly}))} />
-                        <CheckboxItem title="Pull Request时" description="在合并前自动检查，可配置阻断条件。" isChecked={schedule.pr} onToggle={() => setSchedule(s => ({...s, pr: !s.pr}))} />
-                    </div>
-                </div>
-                <div>
-                    <label className="text-sm font-semibold text-slate-700 block mb-2">通知设置</label>
-                     <div className="border border-slate-200 rounded-lg divide-y divide-slate-200">
-                        <CheckboxItem title="发现P0问题时立即通知" description="通过邮件或集成的IM工具发送紧急通知。" isChecked={notifications.p0} onToggle={() => setNotifications(n => ({...n, p0: !n.p0}))} />
-                        <CheckboxItem title="每周发送技术债报告" description="将周度报告发送给团队负责人和核心成员。" isChecked={notifications.report} onToggle={() => setNotifications(n => ({...n, report: !n.report}))} />
-                    </div>
-                </div>
-            </div>
             <ActionButtons onNext={onNext} onPrev={onPrev} nextText="创建/保存 Agent" isCreating={true} />
         </div>
     );

@@ -18,7 +18,7 @@ export const QuickCreateAgentModal: React.FC<QuickCreateAgentModalProps> = ({ is
     const [currentStep, setCurrentStep] = useState(1);
     const [agentName, setAgentName] = useState('');
     const [selectedRole, setSelectedRole] = useState<Role>('developer');
-    const [selectedScenario, setSelectedScenario] = useState<Scenario>('tech-debt');
+    const [selectedScenario, setSelectedScenario] = useState<Scenario>('project-acceptance');
     const [sourceType, setSourceType] = useState<'repository' | 'jar'>('repository');
     const [selectedRepos, setSelectedRepos] = useState<string[]>(repositories.length > 0 ? [repositories[0].id] : []);
 
@@ -61,14 +61,13 @@ export const QuickCreateAgentModal: React.FC<QuickCreateAgentModalProps> = ({ is
                     <div className="space-y-6">
                         <div>
                             <label htmlFor="agent-name" className="text-sm font-semibold text-slate-700 block mb-2">Agent名称</label>
-                            <input id="agent-name" type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="例如：支付模块守护者" className="w-full p-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
+                            <input id="agent-name" type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="例如：支付模块压测Agent" className="w-full p-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
                         </div>
                         <div>
                             <label className="text-sm font-semibold text-slate-700 block mb-2">角色定位</label>
-                            <div className="grid grid-cols-3 gap-3">
-                                <RoleCard icon="👨‍💻" title="开发助手" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
-                                <RoleCard icon="👔" title="团队管家" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
-                                <RoleCard icon="🏗️" title="架构顾问" selected={selectedRole === 'architect'} onClick={() => setSelectedRole('architect')} />
+                            <div className="grid grid-cols-2 gap-3">
+                                <RoleCard icon="👩‍💻" title="测试工程师" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
+                                <RoleCard icon="🧑‍⚖️" title="测试负责人" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
                             </div>
                         </div>
                     </div>
@@ -76,9 +75,24 @@ export const QuickCreateAgentModal: React.FC<QuickCreateAgentModalProps> = ({ is
             case 2:
                 return (
                     <div className="grid grid-cols-1 gap-4">
-                        <ScenarioCard icon="🔧" title="技术债治理" description="持续监控和改善代码质量" selected={selectedScenario === 'tech-debt'} onClick={() => setSelectedScenario('tech-debt')} />
-                        <ScenarioCard icon="📊" title="变更风险评估" description="深度分析每次代码变更的影响" selected={selectedScenario === 'change-risk'} onClick={() => setSelectedScenario('change-risk')} />
-                        <ScenarioCard icon="🏆" title="项目验收" description="在项目上线前进行全面代码审查" selected={selectedScenario === 'project-acceptance'} onClick={() => setSelectedScenario('project-acceptance')} />
+                        <ScenarioCard 
+                            icon="🚀" 
+                            title="项目上线" 
+                            description="对即将上线的项目进行全面的非功能测试，确保满足上线标准。" 
+                            selected={selectedScenario === 'project-acceptance'} 
+                            onClick={() => setSelectedScenario('project-acceptance')} />
+                        <ScenarioCard 
+                            icon="🎯" 
+                            title="非功能精准测试" 
+                            description="针对特定模块或业务场景进行深入的专项测试，发现性能瓶颈。" 
+                            selected={selectedScenario === 'tech-debt'} 
+                            onClick={() => setSelectedScenario('tech-debt')} />
+                        <ScenarioCard 
+                            icon="🔄" 
+                            title="非功能回归测试" 
+                            description="对系统进行定期的非功能回归测试，确保版本迭代不引入性能衰退或稳定性问题。" 
+                            selected={selectedScenario === 'regression-testing'} 
+                            onClick={() => setSelectedScenario('regression-testing')} />
                    </div>
                 );
             case 3:

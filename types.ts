@@ -35,7 +35,7 @@ export type Role = 'developer' | 'tech-lead' | 'architect' | 'tech-manager';
 
 export type Scenario = 'tech-debt' | 'change-risk' | 'project-acceptance' | 'risk-radar' | 'regression-testing';
 
-export type Preference = 'stability' | 'risk' | 'balanced';
+export type Preference = 'business' | 'risk-impact' | 'balanced';
 
 export interface Rule {
     id: string;

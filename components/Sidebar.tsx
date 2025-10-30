@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, navigateTo }) => {
           </div>
           <div>
             <div className="font-semibold text-sm">张三</div>
-            <div className="text-xs text-slate-400">技术负责人</div>
+            <div className="text-xs text-slate-400">测试工程师</div>
           </div>
         </div>
       </div>
