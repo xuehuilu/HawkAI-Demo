@@ -20,22 +20,30 @@ interface CreateAgentProps {
   repositories: Repository[];
   agentToEdit: Agent | null;
   onFinish: () => void;
+  onAgentCreated: (data: any) => void;
 }
 
-export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositories, agentToEdit, onFinish }) => {
+export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositories, agentToEdit, onFinish, onAgentCreated }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [agentName, setAgentName] = useState('');
+  const [selectedScenario, setSelectedScenario] = useState<Scenario>('project-acceptance');
+  const [selectedRepos, setSelectedRepos] = useState<string[]>([]);
+  // Store all form data in a single state object
+  const [formData, setFormData] = useState({});
 
-  useEffect(() => {
+   useEffect(() => {
     if (agentToEdit) {
       setAgentName(agentToEdit.name);
       // In a real app, you'd populate state for all steps here
+      // For now, just set the name and maybe the repo
+      setSelectedRepos([repositories.find(r => r.name === agentToEdit.repo)?.id || '']);
     } else {
       // Reset for "create" mode
       setAgentName('');
+      setSelectedRepos(repositories.length > 0 ? [repositories[0].id] : []);
       setCurrentStep(1);
     }
-  }, [agentToEdit]);
+  }, [agentToEdit, repositories]);
 
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -46,7 +54,13 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
   };
   
   const createAgent = () => {
-    // Logic to create/update agent would go here
+     onAgentCreated({
+        name: agentName,
+        scenario: selectedScenario,
+        source: {
+            repos: selectedRepos,
+        }
+     });
     setCurrentStep(9);
   };
   
@@ -58,6 +72,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
   const handleCreateAnother = () => {
       onFinish();
       setAgentName('');
+      setSelectedRepos(repositories.length > 0 ? [repositories[0].id] : []);
       setCurrentStep(1);
   };
 
@@ -69,8 +84,8 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
   const renderStepContent = () => {
     switch (currentStep) {
       case 1: return <Step2_BasicInfo agentName={agentName} setAgentName={setAgentName} onNext={nextStep} onCancel={handleCancel} />;
-      case 2: return <Step3_Scenario onNext={nextStep} onPrev={prevStep} />;
-      case 3: return <Step1_SourceSelection repositories={repositories} onNext={nextStep} onPrev={prevStep} />;
+      case 2: return <Step3_Scenario selectedScenario={selectedScenario} setSelectedScenario={setSelectedScenario} onNext={nextStep} onPrev={prevStep} />;
+      case 3: return <Step1_SourceSelection repositories={repositories} selectedRepos={selectedRepos} setSelectedRepos={setSelectedRepos} onNext={nextStep} onPrev={prevStep} />;
       case 4: return <Step4_Scope onNext={nextStep} onPrev={prevStep} />;
       case 5: return <Step5_WorkStyle onNext={nextStep} onPrev={prevStep} />;
       case 6: return <Step6_Rules onNext={nextStep} onPrev={prevStep} />;
@@ -86,7 +101,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
         {/* Left Panel: Stepper and Info */}
         <aside className="bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 lg:p-8 flex flex-col">
             <h1 className="text-2xl font-bold text-slate-800">{agentToEdit ? `编辑 Agent` : '创建新Agent'}</h1>
-            <p className="mt-1 text-sm text-slate-500 mb-6">{agentToEdit ? agentToEdit.name : '通过以下步骤配置你的智能代码分析助手'}</p>
+            <p className="mt-1 text-sm text-slate-500 mb-6">{agentToEdit ? agentToEdit.name : '通过以下步骤配置你的智能非功能测试助手'}</p>
             <div className="flex-1 overflow-y-auto -mr-4 pr-4">
                 <WizardStepper currentStep={currentStep} goToStep={goToStep} />
             </div>
@@ -280,16 +295,15 @@ const FileUpload: React.FC<{ onFileChange: (file: File | null) => void }> = ({ o
 
 
 // Step 1: Source Selection
-const Step1_SourceSelection: React.FC<{ repositories: Repository[], onNext: () => void, onPrev: () => void }> = ({ repositories, onNext, onPrev }) => {
+const Step1_SourceSelection: React.FC<{ repositories: Repository[], selectedRepos: string[], setSelectedRepos: (repos: string[]) => void, onNext: () => void, onPrev: () => void }> = ({ repositories, selectedRepos, setSelectedRepos, onNext, onPrev }) => {
     const [sourceType, setSourceType] = useState<'repository' | 'jar'>('repository');
-    const [selectedRepos, setSelectedRepos] = useState<string[]>(repositories.length > 0 ? [repositories[0].id] : []);
     const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
     const handleToggleRepo = (repoId: string) => {
-        setSelectedRepos(prev =>
-            prev.includes(repoId)
-                ? prev.filter(id => id !== repoId)
-                : [...prev, repoId]
+        setSelectedRepos(
+            selectedRepos.includes(repoId)
+                ? selectedRepos.filter(id => id !== repoId)
+                : [...selectedRepos, repoId]
         );
     };
 
@@ -360,20 +374,18 @@ const Step2_BasicInfo: React.FC<{ agentName: string, setAgentName: (name: string
             <div className="space-y-6">
                 <div>
                     <label htmlFor="agent-name" className="text-sm font-semibold text-slate-700 block mb-2">Agent名称</label>
-                    <input id="agent-name" type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="例如：支付模块守护者" className="w-full p-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
-                    <p className="text-xs text-slate-500 mt-1">💡 建议使用能反映代码库特点的名称</p>
+                    <input id="agent-name" type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="例如：支付模块压测Agent" className="w-full p-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
+                    <p className="text-xs text-slate-500 mt-1">💡 建议使用能反映其测试范围与目的的名称</p>
                 </div>
                 <div>
                     <label className="text-sm font-semibold text-slate-700 block mb-2">角色定位</label>
                     <div className="grid grid-cols-2 gap-4">
-                        <RoleCard icon="👨‍💻" title="开发助手" description="关注我负责的模块" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
-                        <RoleCard icon="👔" title="团队管家" description="关注整个团队的代码质量" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
-                        <RoleCard icon="🏗️" title="架构顾问" description="关注系统架构问题" selected={selectedRole === 'architect'} onClick={() => setSelectedRole('architect')} />
-                        <RoleCard icon="📈" title="技术管理者" description="关注跨团队的技术风险与效能" selected={selectedRole === 'tech-manager'} onClick={() => setSelectedRole('tech-manager')} />
+                        <RoleCard icon="👩‍💻" title="测试工程师" description="负责执行具体的测试任务" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
+                        <RoleCard icon="🧑‍⚖️" title="测试负责人" description="负责规划和管理整体测试活动" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
                     </div>
                 </div>
             </div>
-            <ActionButtons onNext={onNext} onCancel={onCancel} />
+            <ActionButtons onNext={onNext} onCancel={onCancel} nextDisabled={!agentName} />
         </div>
     );
 };
@@ -387,17 +399,33 @@ const RoleCard: React.FC<{icon: string, title: string, description: string, sele
 
 
 // Step 3: Scenario
-const Step3_Scenario: React.FC<{ onNext: () => void, onPrev: () => void }> = ({ onNext, onPrev }) => {
-    const [selectedScenario, setSelectedScenario] = useState<Scenario>('tech-debt');
+const Step3_Scenario: React.FC<{ selectedScenario: Scenario, setSelectedScenario: (s: Scenario) => void, onNext: () => void, onPrev: () => void }> = ({ selectedScenario, setSelectedScenario, onNext, onPrev }) => {
     return (
         <div>
             <h2 className="text-xl font-bold text-slate-800">🎯 选择分析场景</h2>
-            <p className="mt-1 text-sm text-slate-500 mb-6">根据你的需求选择Agent的工作模式。</p>
+            <p className="mt-1 text-sm text-slate-500 mb-6">根据你的测试目标选择Agent的工作模式。</p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                 <ScenarioCard icon="🔧" title="技术债治理" description="持续监控和改善代码质量，关注累积的技术风险和长期债务。" features={['全量代码分析', '热点文件识别', '定期巡检报告']} selected={selectedScenario === 'tech-debt'} onClick={() => setSelectedScenario('tech-debt')} />
-                 <ScenarioCard icon="📊" title="变更风险评估" description="深度分析每次代码变更的影响范围和潜在风险，预防生产事故。" features={['变更影响分析', '依赖关系追踪', '风险等级评估']} selected={selectedScenario === 'change-risk'} onClick={() => setSelectedScenario('change-risk')} />
-                 <ScenarioCard icon="🏆" title="项目验收" description="在项目上线前进行全面代码审查，确保符合质量标准和规范。" features={['编码规范检查', '安全漏洞扫描', '代码重复率检测']} selected={selectedScenario === 'project-acceptance'} onClick={() => setSelectedScenario('project-acceptance')} />
-                 <ScenarioCard icon="📡" title="风险雷达" description="主动发现跨项目/团队的潜在风险，为管理者提供决策支持。" features={['跨库依赖分析', '技术栈健康度巡检', '团队效能度量']} selected={selectedScenario === 'risk-radar'} onClick={() => setSelectedScenario('risk-radar')} />
+                 <ScenarioCard 
+                     icon="🚀" 
+                     title="项目上线" 
+                     description="对即将上线的项目进行全面的非功能测试，确保满足上线标准。" 
+                     features={['性能压测', 'API健壮性测试', '安全漏洞扫描']} 
+                     selected={selectedScenario === 'project-acceptance'} 
+                     onClick={() => setSelectedScenario('project-acceptance')} />
+                 <ScenarioCard 
+                     icon="🎯" 
+                     title="非功能精准测试" 
+                     description="针对特定模块或业务场景进行深入的专项测试，发现性能瓶颈。" 
+                     features={['精准性能测试', '可靠性专项测试', '自定义测试场景']} 
+                     selected={selectedScenario === 'tech-debt'} 
+                     onClick={() => setSelectedScenario('tech-debt')} />
+                 <ScenarioCard 
+                     icon="🔄" 
+                     title="非功能回归测试" 
+                     description="对系统进行定期的非功能回归测试，确保版本迭代不引入性能衰退或稳定性问题。" 
+                     features={['性能基准对比', '可靠性指标监控', '自动化回归报告']} 
+                     selected={selectedScenario === 'regression-testing'} 
+                     onClick={() => setSelectedScenario('regression-testing')} />
             </div>
             <ActionButtons onNext={onNext} onPrev={onPrev} />
         </div>

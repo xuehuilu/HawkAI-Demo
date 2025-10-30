@@ -52,7 +52,7 @@ export const Overview: React.FC<OverviewProps> = ({ navigateTo, repositories, on
     <div>
       <PageHeader
         title="概览"
-        subtitle="欢迎使用 HawkAI 智能代码分析平台，全方位掌控代码质量与变更风险"
+        subtitle="欢迎使用 HawkAI 一体化非功能测试平台，全方位保障系统质量与韧性"
       />
       <div className="p-6 sm:p-8 space-y-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

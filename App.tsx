@@ -29,11 +29,12 @@ const App: React.FC = () => {
   }, [activePage]);
 
   const handleAddAgent = useCallback((newAgentData: { name: string; scenario: Scenario; source: { repos: string[] } }) => {
-    const scenarioMap = {
-        'tech-debt': '技术债治理',
+    const scenarioMap: Record<Scenario, string> = {
+        'tech-debt': '非功能精准测试',
         'change-risk': '变更风险评估',
-        'project-acceptance': '项目验收',
+        'project-acceptance': '项目上线',
         'risk-radar': '风险雷达',
+        'regression-testing': '非功能回归测试',
     };
     
     const repoName = REPOSITORIES.find(r => r.id === newAgentData.source.repos[0])?.name || 'unknown-repo';
@@ -43,7 +44,7 @@ const App: React.FC = () => {
         name: newAgentData.name,
         status: 'running',
         repo: repoName,
-        role: scenarioMap[newAgentData.scenario],
+        role: scenarioMap[newAgentData.scenario] || '未知场景',
         lastScan: '刚刚',
         p0Issues: 0,
         p1Issues: 0,
@@ -77,6 +78,7 @@ const App: React.FC = () => {
         return <CreateAgent 
                     navigateTo={navigateTo} 
                     repositories={REPOSITORIES} 
+                    onAgentCreated={handleAddAgent}
                     agentToEdit={agentToEdit} 
                     onFinish={() => setAgentToEdit(null)}
                 />;
