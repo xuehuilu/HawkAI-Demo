@@ -1,0 +1,5 @@
+{
+  "name": "HawkAI - Intelligent Code Analysis Platform",
+  "description": "An intelligent code analysis platform that helps developers and teams monitor, manage, and improve code quality. Create AI agents to automatically scan repositories, identify technical debt, assess change risks, and enforce coding standards.",
+  "requestFramePermissions": []
+}
