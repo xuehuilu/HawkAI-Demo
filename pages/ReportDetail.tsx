@@ -219,6 +219,13 @@ const FindingDetailModal: React.FC<{ finding: Finding | null; onClose: () => voi
 
                 {/* Footer */}
                 <div className="p-4 bg-white border-t border-slate-200 flex justify-end gap-3 rounded-b-xl flex-shrink-0">
+                    <button
+                        onClick={() => alert(`问题 '${finding.id}' 已同步到Jira项目 'PROJ-123'。`)}
+                        className="bg-white border border-slate-300 text-slate-700 font-semibold px-4 py-2 rounded-lg hover:bg-slate-50 flex items-center gap-2"
+                    >
+                        <span>🔗</span>
+                        <span>同步到Jira</span>
+                    </button>
                     <button onClick={onClose} className="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg shadow-sm hover:bg-indigo-700">关闭</button>
                 </div>
             </div>

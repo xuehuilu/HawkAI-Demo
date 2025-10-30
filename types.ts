@@ -7,6 +7,7 @@ export enum Page {
   Settings = 'settings',
   AgentDetail = 'agent-detail',
   ReportDetail = 'report-detail',
+  IntegrationCenter = 'integration-center',
 }
 
 export interface Agent {

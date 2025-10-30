@@ -8,6 +8,7 @@ import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { AgentDetail } from './pages/AgentDetail';
 import { ReportDetail } from './pages/ReportDetail';
+import { IntegrationCenter } from './pages/IntegrationCenter';
 import { Page } from './types';
 import type { Agent, Repository, Report, Scenario } from './types';
 import { AGENTS, REPOSITORIES, REPORTS } from './constants';
@@ -88,6 +89,8 @@ const App: React.FC = () => {
         return <Reports reports={REPORTS} viewReportDetail={viewReportDetail} />;
       case Page.Settings:
         return <Settings />;
+      case Page.IntegrationCenter:
+        return <IntegrationCenter />;
       case Page.AgentDetail:
         const agent = agents.find(a => a.id === selectedAgentId);
         return agent ? <AgentDetail agent={agent} navigateTo={navigateTo} onEdit={handleEditAgent} /> : <Agents agents={agents} viewAgentDetail={viewAgentDetail} navigateTo={navigateTo} />;

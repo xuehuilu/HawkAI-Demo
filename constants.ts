@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
         { id: Page.Repositories, label: '代码库管理', icon: '📦', badge: 5 },
     ]},
     { id: 'system', title: '系统', items: [
+        { id: Page.IntegrationCenter, label: '集成中心', icon: '🔗' },
         { id: Page.Settings, label: '设置', icon: '⚙️' },
     ]}
 ];
