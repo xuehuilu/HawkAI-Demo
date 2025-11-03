@@ -69,7 +69,7 @@ export const Overview: React.FC<OverviewProps> = ({ navigateTo, repositories, on
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <QuickStartCard icon="⚡️" label="快速创建Agent" onClick={() => setIsQuickCreateOpen(true)} />
                 <QuickStartCard icon="➕" label="高级创建" onClick={() => navigateTo(Page.CreateAgent)} />
-                <QuickStartCard icon="📦" label="连接代码库" onClick={() => navigateTo(Page.Repositories)} />
+                <QuickStartCard icon="📦" label="连接代码库" onClick={() => navigateTo(Page.IntegrationCenter)} />
                 <QuickStartCard icon="📊" label="查看报告" onClick={() => navigateTo(Page.Reports)} />
             </div>
         </div>

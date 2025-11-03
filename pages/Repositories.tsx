@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import type { Repository } from '../types';
-import { ConnectRepoModal } from '../components/ConnectRepoModal';
+import { ConnectRepoModal, Platform } from '../components/ConnectRepoModal';
 
 interface RepoItemProps {
     repo: Repository;
@@ -37,9 +37,9 @@ interface RepositoriesProps {
 export const Repositories: React.FC<RepositoriesProps> = ({ repositories }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleConnectRepo = (data: { url: string; token: string; branch: string }) => {
+  const handleConnectRepo = (data: { platform: Platform, url: string; token: string; branch: string }) => {
     console.log('Connecting new repo:', data);
-    alert(`正在连接代码库: ${data.url}`);
+    alert(`正在连接 ${data.platform} 代码库: ${data.url}`);
     setIsModalOpen(false);
     // Here you would typically add logic to update the list of repositories
   };

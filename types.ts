@@ -3,7 +3,6 @@ export enum Page {
   Agents = 'agents',
   CreateAgent = 'create-agent',
   Reports = 'reports',
-  Repositories = 'repositories',
   Settings = 'settings',
   AgentDetail = 'agent-detail',
   ReportDetail = 'report-detail',

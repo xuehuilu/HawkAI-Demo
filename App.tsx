@@ -3,7 +3,6 @@ import { Sidebar } from './components/Sidebar';
 import { Overview } from './pages/Overview';
 import { Agents } from './pages/Agents';
 import { CreateAgent } from './pages/CreateAgent';
-import { Repositories } from './pages/Repositories';
 import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 import { AgentDetail } from './pages/AgentDetail';
@@ -33,7 +32,7 @@ const App: React.FC = () => {
     const scenarioMap: Record<Scenario, string> = {
         'tech-debt': '非功能精准测试',
         'change-risk': '变更风险评估',
-        'project-acceptance': '项目上线',
+        'project-acceptance': '项目验收',
         'risk-radar': '风险雷达',
         'regression-testing': '非功能回归测试',
     };
@@ -83,8 +82,6 @@ const App: React.FC = () => {
                     agentToEdit={agentToEdit} 
                     onFinish={() => setAgentToEdit(null)}
                 />;
-      case Page.Repositories:
-        return <Repositories repositories={REPOSITORIES} />;
       case Page.Reports:
         return <Reports reports={REPORTS} viewReportDetail={viewReportDetail} />;
       case Page.Settings:

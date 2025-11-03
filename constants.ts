@@ -10,7 +10,6 @@ export const NAV_ITEMS = [
     ]},
     { id: 'data', title: '数据与管理', items: [
         { id: Page.Reports, label: '我的报告', icon: '📊' },
-        { id: Page.Repositories, label: '代码库管理', icon: '📦', badge: 5 },
     ]},
     { id: 'system', title: '系统', items: [
         { id: Page.IntegrationCenter, label: '集成中心', icon: '🔗' },
@@ -19,7 +18,7 @@ export const NAV_ITEMS = [
 ];
 
 export const AGENTS: Agent[] = [
-    { id: 'agent-1', name: '电商平台V3上线-性能压测', status: 'running', repo: 'payment-service', role: '项目上线', lastScan: '3小时前', p0Issues: 5, p1Issues: 18, health: 78 },
+    { id: 'agent-1', name: '电商平台V3上线-性能压测', status: 'running', repo: 'payment-service', role: '项目验收', lastScan: '3小时前', p0Issues: 5, p1Issues: 18, health: 78 },
     { id: 'agent-2', name: '订单服务-精准测试', status: 'scanning', repo: 'order-service', role: '非功能精准测试', lastScan: '正在扫描... 68%', p0Issues: 1, p1Issues: 7, health: 92 },
     { id: 'agent-3', name: '前端团队-回归测试', status: 'idle', repo: 'web-frontend', role: '非功能回归测试', lastScan: '1天前', p0Issues: 0, p1Issues: 3, health: 95 },
 ];

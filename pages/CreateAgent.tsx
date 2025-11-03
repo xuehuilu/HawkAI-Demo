@@ -103,11 +103,14 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
             <div className="flex-1 overflow-y-auto -mr-4 pr-4">
                 <WizardStepper currentStep={currentStep} goToStep={goToStep} />
             </div>
+            <div className="mt-6 pt-4 border-t border-slate-200 text-xs text-slate-400">
+                <p>💡 使用左侧导航可以在已完成的步骤间跳转。</p>
+            </div>
         </aside>
 
         {/* Right Panel: Step Content */}
         <main className="overflow-y-auto bg-slate-50">
-            <div className="max-w-4xl mx-auto p-6 sm:p-8 lg:p-10">
+            <div className="max-w-5xl mx-auto p-6 sm:p-8 lg:p-10">
                 {renderStepContent()}
             </div>
         </main>
@@ -370,14 +373,16 @@ const Step2_BasicInfo: React.FC<{ agentName: string, setAgentName: (name: string
             <h2 className="text-xl font-bold text-slate-800">📝 基本信息</h2>
             <p className="mt-1 text-sm text-slate-500 mb-6">给你的Agent起个名字，并选择它的角色定位。</p>
             <div className="space-y-6">
-                <div>
-                    <label htmlFor="agent-name" className="text-sm font-semibold text-slate-700 block mb-2">Agent名称</label>
-                    <input id="agent-name" type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="例如：支付模块压测Agent" className="w-full p-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
-                    <p className="text-xs text-slate-500 mt-1">💡 建议使用能反映其测试范围与目的的名称</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+                    <label htmlFor="agent-name" className="text-sm font-semibold text-slate-700 md:text-right md:pt-2">Agent名称</label>
+                    <div className="md:col-span-2">
+                        <input id="agent-name" type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="例如：支付模块压测Agent" className="w-full p-2 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
+                        <p className="text-xs text-slate-500 mt-1">💡 建议使用能反映其测试范围与目的的名称</p>
+                    </div>
                 </div>
-                <div>
-                    <label className="text-sm font-semibold text-slate-700 block mb-2">角色定位</label>
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+                    <label className="text-sm font-semibold text-slate-700 md:text-right md:pt-2">角色定位</label>
+                    <div className="md:col-span-2 grid grid-cols-2 gap-4">
                         <RoleCard icon="👩‍💻" title="测试工程师" description="负责执行具体的测试任务" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
                         <RoleCard icon="🧑‍⚖️" title="测试负责人" description="负责规划和管理整体测试活动" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
                     </div>
@@ -405,7 +410,7 @@ const Step3_Scenario: React.FC<{ selectedScenario: Scenario, setSelectedScenario
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                  <ScenarioCard 
                      icon="🚀" 
-                     title="项目上线" 
+                     title="项目验收" 
                      description="对即将上线的项目进行全面的非功能测试，确保满足上线标准。" 
                      features={['性能压测', 'API健壮性测试', '安全漏洞扫描']} 
                      selected={selectedScenario === 'project-acceptance'} 

@@ -77,7 +77,7 @@ export const QuickCreateAgentModal: React.FC<QuickCreateAgentModalProps> = ({ is
                     <div className="grid grid-cols-1 gap-4">
                         <ScenarioCard 
                             icon="🚀" 
-                            title="项目上线" 
+                            title="项目验收" 
                             description="对即将上线的项目进行全面的非功能测试，确保满足上线标准。" 
                             selected={selectedScenario === 'project-acceptance'} 
                             onClick={() => setSelectedScenario('project-acceptance')} />
