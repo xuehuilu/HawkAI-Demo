@@ -17,7 +17,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activePage, navigateTo }) => {
             HawkAI
           </div>
         </div>
-        <div className="text-xs text-slate-400 pl-11">一体化非功能测试平台</div>
+        <div className="text-xs text-slate-400 pl-11">稳定性左移，守护每一次提交</div>
       </div>
 
       <nav className="flex-1 p-3 space-y-4 overflow-y-auto">

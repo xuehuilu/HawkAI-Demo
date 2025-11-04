@@ -1,5 +1,5 @@
 // @google/genai-api-fix: Add BaseReport to type import to fix type errors.
-import type { Agent, Repository, Rule, LearnedRule, Report, PrecisionTestReport, BaseReport, ReliabilityTestReport, Finding } from './types';
+import type { Agent, Repository, Rule, LearnedRule, Report, PrecisionTestReport, BaseReport, ReliabilityTestReport, Finding, ApiToken } from './types';
 import { Page } from './types';
 
 export const NAV_ITEMS = [
@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
     ]},
     { id: 'system', title: '系统', items: [
         { id: Page.IntegrationCenter, label: '集成中心', icon: '🔗' },
+        { id: Page.ApiTokens, label: 'API 令牌', icon: '🔑' },
         { id: Page.Settings, label: '设置', icon: '⚙️' },
     ]}
 ];
@@ -307,4 +308,9 @@ export const REPORTS: Report[] = [
         createdByRole: 'tech-lead',
         ...PRECISION_TEST_REPORT_DATA,
     },
+];
+
+export const API_TOKENS: ApiToken[] = [
+    { id: 'token-1', name: 'GitLab CI Runner', tokenPrefix: 'hawk_a1b2c3d4', lastUsed: '3小时前', created: '2025-11-10', expires: '2026-11-10' },
+    { id: 'token-2', name: '本地开发调试', tokenPrefix: 'hawk_e5f6g7h8', lastUsed: '1天前', created: '2025-11-01', expires: '永不过期' },
 ];

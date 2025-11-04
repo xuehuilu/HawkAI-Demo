@@ -9,9 +9,10 @@ const STEPS = [
   { id: 3, title: '选择分析源' },
   { id: 4, title: '关注范围' },
   { id: 5, title: '工作方式' },
-  { id: 6, title: '规则配置' },
-  { id: 7, title: '已学习' },
-  { id: 8, title: '完成' },
+  { id: 6, title: 'CI/CD 集成' },
+  { id: 7, title: '规则配置' },
+  { id: 8, title: '已学习' },
+  { id: 9, title: '完成' },
 ];
 
 interface CreateAgentProps {
@@ -60,7 +61,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
             repos: selectedRepos,
         }
      });
-    setCurrentStep(8); // Go to the 'Complete' step
+    setCurrentStep(9); // Go to the 'Complete' step
   };
   
   const handleFinish = () => {
@@ -87,9 +88,10 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
       case 3: return <Step1_SourceSelection repositories={repositories} selectedRepos={selectedRepos} setSelectedRepos={setSelectedRepos} onNext={nextStep} onPrev={prevStep} />;
       case 4: return <Step4_Scope onNext={nextStep} onPrev={prevStep} />;
       case 5: return <Step5_WorkStyle onNext={nextStep} onPrev={prevStep} />;
-      case 6: return <Step6_Rules onNext={nextStep} onPrev={prevStep} />;
-      case 7: return <Step7_Learning onNext={createAgent} onPrev={prevStep} isEditing={!!agentToEdit} />;
-      case 8: return <Step9_Complete agentName={agentName || agentToEdit?.name || ''} onFinish={handleFinish} onCreateAnother={handleCreateAnother} />;
+      case 6: return <Step_CI_Integration agentName={agentName} onNext={nextStep} onPrev={prevStep} navigateTo={navigateTo} />;
+      case 7: return <Step6_Rules onNext={nextStep} onPrev={prevStep} />;
+      case 8: return <Step7_Learning onNext={createAgent} onPrev={prevStep} isEditing={!!agentToEdit} />;
+      case 9: return <Step9_Complete agentName={agentName || agentToEdit?.name || ''} onFinish={handleFinish} onCreateAnother={handleCreateAnother} />;
       default: return null;
     }
   };
@@ -99,7 +101,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
         {/* Left Panel: Stepper and Info */}
         <aside className="bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 lg:p-8 flex flex-col">
             <h1 className="text-2xl font-bold text-slate-800">{agentToEdit ? `编辑 Agent` : '创建新Agent'}</h1>
-            <p className="mt-1 text-sm text-slate-500 mb-6">{agentToEdit ? agentToEdit.name : '通过以下步骤配置你的智能非功能测试助手'}</p>
+            <p className="mt-1 text-sm text-slate-500 mb-6">{agentToEdit ? agentToEdit.name : '通过以下步骤配置你的智能测试助手'}</p>
             <div className="flex-1 overflow-y-auto -mr-4 pr-4">
                 <WizardStepper currentStep={currentStep} goToStep={goToStep} />
             </div>
@@ -110,7 +112,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
 
         {/* Right Panel: Step Content */}
         <main className="overflow-y-auto bg-slate-50">
-            <div className="max-w-5xl mx-auto p-6 sm:p-8 lg:p-10">
+            <div className="max-w-7xl mx-auto p-6 sm:p-8 lg:p-12">
                 {renderStepContent()}
             </div>
         </main>
@@ -367,11 +369,10 @@ const Step1_SourceSelection: React.FC<{ repositories: Repository[], selectedRepo
 
 // Step 2: Basic Info
 const Step2_BasicInfo: React.FC<{ agentName: string, setAgentName: (name: string) => void, onNext: () => void, onCancel: () => void }> = ({ agentName, setAgentName, onNext, onCancel }) => {
-    const [selectedRole, setSelectedRole] = useState<Role>('developer');
     return (
         <div>
             <h2 className="text-xl font-bold text-slate-800">📝 基本信息</h2>
-            <p className="mt-1 text-sm text-slate-500 mb-6">给你的Agent起个名字，并选择它的角色定位。</p>
+            <p className="mt-1 text-sm text-slate-500 mb-6">给你的Agent起个名字，并确认它的角色定位。</p>
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
                     <label htmlFor="agent-name" className="text-sm font-semibold text-slate-700 md:text-right md:pt-2">Agent名称</label>
@@ -382,9 +383,14 @@ const Step2_BasicInfo: React.FC<{ agentName: string, setAgentName: (name: string
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
                     <label className="text-sm font-semibold text-slate-700 md:text-right md:pt-2">角色定位</label>
-                    <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                        <RoleCard icon="👩‍💻" title="测试工程师" description="负责执行具体的测试任务" selected={selectedRole === 'developer'} onClick={() => setSelectedRole('developer')} />
-                        <RoleCard icon="🧑‍⚖️" title="测试负责人" description="负责规划和管理整体测试活动" selected={selectedRole === 'tech-lead'} onClick={() => setSelectedRole('tech-lead')} />
+                    <div className="md:col-span-2">
+                        <div className={`p-4 border-2 rounded-lg text-center border-indigo-500 bg-indigo-50`}>
+                            <div className="text-4xl mb-2">🛡️</div>
+                            <div className="font-bold text-slate-800">代码可靠性专家</div>
+                            <div className="text-xs text-slate-500 mt-2 text-left">
+                                专注于在代码提交阶段发现潜在的稳定性隐患。我会像资深工程师一样，以敏锐的眼光审查每一处代码变更，识别可能导致系统故障的问题，并提供可执行的修复建议。我的目标是帮助你在问题进入生产环境之前就将它们消灭。
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -529,7 +535,71 @@ const Step5_WorkStyle: React.FC<{ onNext: () => void, onPrev: () => void }> = ({
     );
 };
 
-// Step 6: Rules
+// Step 6: CI/CD Integration
+const Step_CI_Integration: React.FC<{ onNext: () => void, onPrev: () => void, agentName: string, navigateTo: (page: Page) => void }> = ({ onNext, onPrev, agentName, navigateTo }) => {
+    const agentId = (agentName || 'your-agent-name').toLowerCase().replace(/\s+/g, '-');
+    
+    const gitlabCiYml = `stages:
+  - test
+
+hawkai_reliability_check:
+  stage: test
+  image: curlimages/curl:latest
+  script:
+    - echo "Triggering HawkAI analysis for Agent: ${agentId}"
+    - |
+      curl -X POST "https://api.hawkai.com/v1/scan/trigger" \\
+           -H "Authorization: Bearer $HAWKAI_API_TOKEN" \\
+           -H "Content-Type: application/json" \\
+           -d '{
+                 "agentId": "${agentId}",
+                 "commitSha": "$CI_COMMIT_SHA",
+                 "branch": "$CI_COMMIT_BRANCH"
+               }'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+`;
+
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(gitlabCiYml.trim());
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div>
+            <h2 className="text-xl font-bold text-slate-800">🔗 CI/CD 集成</h2>
+            <p className="mt-1 text-sm text-slate-500 mb-6">将Agent集成到你的GitLab CI/CD流水线中，实现代码提交时的自动化分析。</p>
+            
+            <div className="bg-white p-6 rounded-xl border border-slate-200">
+                <h3 className="font-bold text-slate-800">GitLab CI/CD 配置</h3>
+                <p className="text-xs text-slate-500 mt-1 mb-4">将以下Job添加到你的 <code className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded">.gitlab-ci.yml</code> 文件中。这将在每次创建合并请求（Merge Request）时自动触发此Agent进行分析。</p>
+                
+                <div className="relative bg-slate-800 text-white rounded-lg p-4 font-mono text-xs">
+                    <button onClick={handleCopy} className="absolute top-2 right-2 bg-slate-600 hover:bg-slate-500 text-white font-semibold text-xs px-2 py-1 rounded">
+                        {copied ? '✓ 已复制' : '复制'}
+                    </button>
+                    <pre><code>{gitlabCiYml.trim()}</code></pre>
+                </div>
+
+                <div className="mt-4 p-4 bg-slate-100 rounded-lg text-sm text-slate-600 border-l-4 border-amber-400">
+                    <p className="font-bold">⚠️ 重要提示:</p>
+                    <ul className="list-disc list-inside text-xs mt-2 space-y-1">
+                        <li>请确保已在GitLab项目的 "Settings &gt; CI/CD &gt; Variables" 中配置了名为 <code className="bg-slate-200 text-slate-700 px-1 py-0.5 rounded">HAWKAI_API_TOKEN</code> 的变量。</li>
+                        <li>你可以 <a href="#" onClick={(e) => { e.preventDefault(); navigateTo(Page.ApiTokens); }} className="text-indigo-600 font-semibold underline">在这里</a> 生成你的API Token。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <ActionButtons onNext={onNext} onPrev={onPrev} />
+        </div>
+    );
+};
+
+
+// Step 7: Rules
 const priorityClasses: {[key in Rule['priority']]: string} = {
     P0: 'bg-red-100 text-red-800',
     P1: 'bg-amber-100 text-amber-800',
@@ -669,7 +739,7 @@ const Step6_Rules: React.FC<{ onNext: () => void, onPrev: () => void }> = ({ onN
     );
 };
 
-// Step 7: Learning
+// Step 8: Learning
 const LearningStat: React.FC<{value: number, label: string}> = ({value, label}) => (
     <div className="bg-slate-50 p-4 rounded-lg text-center border border-slate-200">
         <p className="text-3xl font-bold text-indigo-600">{value}</p>

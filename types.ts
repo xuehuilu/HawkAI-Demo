@@ -7,6 +7,7 @@ export enum Page {
   AgentDetail = 'agent-detail',
   ReportDetail = 'report-detail',
   IntegrationCenter = 'integration-center',
+  ApiTokens = 'api-tokens',
 }
 
 export interface Agent {
@@ -138,3 +139,12 @@ export interface ReliabilityTestReport extends BaseReport {
 
 
 export type Report = PrecisionTestReport | ReliabilityTestReport;
+
+export interface ApiToken {
+    id: string;
+    name: string;
+    tokenPrefix: string;
+    lastUsed: string;
+    created: string;
+    expires: string;
+}

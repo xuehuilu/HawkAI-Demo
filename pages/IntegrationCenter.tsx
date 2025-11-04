@@ -60,7 +60,7 @@ export const IntegrationCenter: React.FC = () => {
       id: 'gitlab',
       icon: '🦊',
       name: 'GitLab',
-      description: '连接GitLab代码库，支持自建和SaaS实例，进行代码分析。',
+      description: '连接GitLab代码库，并将Agent无缝集成到您的CI/CD流水线中，在每次代码合并前自动执行检查。',
       isConnected: false,
       isGitProvider: true,
     },

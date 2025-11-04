@@ -1,5 +1,5 @@
 {
-  "name": "HawkAI - 一体化非功能测试平台",
-  "description": "一个一体化非功能测试平台，帮助团队保障应用的质量与韧性。创建AI Agent自动进行性能、安全、可靠性测试，评估变更风险，并落地最佳实践。",
+  "name": "HawkAI",
+  "description": "稳定性左移，守护每一次提交。创建AI Agent自动进行性能、安全、可靠性测试，评估变更风险，并落地最佳实践。",
   "requestFramePermissions": []
 }

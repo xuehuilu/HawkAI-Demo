@@ -8,6 +8,7 @@ import { Settings } from './pages/Settings';
 import { AgentDetail } from './pages/AgentDetail';
 import { ReportDetail } from './pages/ReportDetail';
 import { IntegrationCenter } from './pages/IntegrationCenter';
+import { ApiTokens } from './pages/ApiTokens';
 import { Page } from './types';
 import type { Agent, Repository, Report, Scenario } from './types';
 import { AGENTS, REPOSITORIES, REPORTS } from './constants';
@@ -88,6 +89,8 @@ const App: React.FC = () => {
         return <Settings />;
       case Page.IntegrationCenter:
         return <IntegrationCenter />;
+      case Page.ApiTokens:
+        return <ApiTokens />;
       case Page.AgentDetail:
         const agent = agents.find(a => a.id === selectedAgentId);
         return agent ? <AgentDetail agent={agent} navigateTo={navigateTo} onEdit={handleEditAgent} /> : <Agents agents={agents} viewAgentDetail={viewAgentDetail} navigateTo={navigateTo} />;
