@@ -94,7 +94,8 @@ export const LEARNED_RULES: LearnedRule[] = [
 
 
 // Data for the new Precision Test Report
-const PRECISION_TEST_REPORT_DATA: Omit<PrecisionTestReport, keyof Omit<BaseReport, 'stats'>> & { stats: Report['stats'] } = {
+// @google/genai-api-fix: Simplify complex Omit type with Pick to improve TypeScript inference and fix discriminated union issues.
+const PRECISION_TEST_REPORT_DATA: Pick<PrecisionTestReport, 'type' | 'conclusion' | 'stats' | 'kpis' | 'testInfo' | 'bottlenecks' | 'transactionDetails'> = {
     type: '非功能精准测试',
     conclusion: '不通过',
     stats: { newIssues: 2, fixedIssues: 0, healthChange: 0, p0Issues: 1 },
@@ -122,7 +123,8 @@ const PRECISION_TEST_REPORT_DATA: Omit<PrecisionTestReport, keyof Omit<BaseRepor
 };
 
 // Data for the new Reliability Test Report
-const RELIABILITY_TEST_REPORT_DATA: Omit<ReliabilityTestReport, keyof Omit<BaseReport, 'stats'>> & { stats: Report['stats'] } = {
+// @google/genai-api-fix: Simplify complex Omit type with Pick to improve TypeScript inference and fix discriminated union issues.
+const RELIABILITY_TEST_REPORT_DATA: Pick<ReliabilityTestReport, 'type' | 'health' | 'stats' | 'findings'> = {
     type: '可靠性测试',
     health: 82,
     stats: { newIssues: 7, fixedIssues: 2, healthChange: -5, p0Issues: 1 },

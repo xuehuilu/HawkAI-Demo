@@ -268,9 +268,8 @@ const FindingRow: React.FC<{ finding: Finding, onDetailClick: (finding: Finding)
     const handleReject = (reason: string) => {
         let reasonText = '';
         switch(reason) {
-            case 'ignore_once': reasonText = "不需要当前这个规则"; break;
-            case 'ignore_file': reasonText = "当前文件不需要此规则"; break;
-            case 'false_positive': reasonText = "风险是错误的"; break;
+            case 'ignore_risk': reasonText = "忽略该风险"; break;
+            case 'false_positive': reasonText = "风险有误"; break;
         }
         onFeedback(finding.id, 'rejected', reasonText);
         setIsRejectionMenuOpen(false);
@@ -306,9 +305,8 @@ const FindingRow: React.FC<{ finding: Finding, onDetailClick: (finding: Finding)
                                 <button onClick={() => setIsRejectionMenuOpen(p => !p)} className="text-xs font-semibold text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-100 transition-colors">✕ 拒绝</button>
                                 {isRejectionMenuOpen && (
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 z-10 py-1">
-                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('ignore_once'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">不需要当前这个规则</a>
-                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('ignore_file'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">当前文件不需要此规则</a>
-                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('false_positive'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">风险是错误的</a>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('ignore_risk'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">忽略该风险</a>
+                                        <a href="#" onClick={(e) => { e.preventDefault(); handleReject('false_positive'); }} className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">风险有误</a>
                                     </div>
                                 )}
                             </div>
@@ -415,9 +413,11 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({ report, navigateTo }
   const renderReportContent = () => {
     switch(report.type) {
         case '非功能精准测试':
-            return <PrecisionTestDetail report={report as PrecisionTestReport} />;
+            // @google/genai-api-fix: Removed unnecessary type assertion as type narrowing now works correctly.
+            return <PrecisionTestDetail report={report} />;
         case '可靠性测试':
-            return <ReliabilityTestDetail report={report as ReliabilityTestReport} />;
+            // @google/genai-api-fix: Removed unnecessary type assertion as type narrowing now works correctly.
+            return <ReliabilityTestDetail report={report} />;
         default:
             // This will error if a case is missed, ensuring type safety
             const _exhaustiveCheck: never = report;
