@@ -328,6 +328,75 @@ const FindingRow: React.FC<{ finding: Finding, onDetailClick: (finding: Finding)
     );
 };
 
+const ReportSummary: React.FC<{ report: ReliabilityTestReport }> = ({ report }) => {
+    const { changeSummary, keyFindings, impactAssessment } = report;
+
+    if (!changeSummary || !keyFindings || !impactAssessment) {
+        return null;
+    }
+
+    return (
+        <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* What you did */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="text-xl">📝</span>
+                    <span>本次变更分析</span>
+                </h3>
+                <p className="text-sm text-slate-600 mt-3">{changeSummary.title}</p>
+                <div className="mt-4 flex justify-around text-center border-t border-slate-200 pt-4">
+                    <div>
+                        <p className="text-2xl font-bold text-slate-800">{changeSummary.fileCount}</p>
+                        <p className="text-xs text-slate-500">文件变更</p>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-emerald-600">+{changeSummary.additions}</p>
+                        <p className="text-xs text-slate-500">代码增加</p>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-red-600">-{changeSummary.deletions}</p>
+                        <p className="text-xs text-slate-500">代码删除</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Key Findings */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="text-xl">🎯</span>
+                    <span>关键发现</span>
+                </h3>
+                <div className="mt-3 space-y-3">
+                    <div>
+                        <h4 className="font-semibold text-emerald-700 text-sm mb-1">✅ 好消息</h4>
+                        <ul className="list-disc list-inside text-sm text-slate-600 space-y-1 pl-4">
+                            {keyFindings.goodNews.map((item, index) => <li key={index}>{item}</li>)}
+                        </ul>
+                    </div>
+                     <div>
+                        <h4 className="font-semibold text-amber-700 text-sm mb-1">⚠️ 注意</h4>
+                        <ul className="list-disc list-inside text-sm text-slate-600 space-y-1 pl-4">
+                             {keyFindings.warnings.map((item, index) => <li key={index}>{item}</li>)}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {/* Impact Assessment */}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="text-xl">🔬</span>
+                    <span>影响评估</span>
+                </h3>
+                 <div className="mt-3 space-y-3 text-sm text-slate-600">
+                     <p><strong>影响范围:</strong> {impactAssessment.scope}</p>
+                     <p><strong>上线建议:</strong> <span className="font-semibold text-indigo-700">{impactAssessment.recommendation}</span></p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ReliabilityTestDetail: React.FC<{ report: ReliabilityTestReport }> = ({ report }) => {
     const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
     const [localFindings, setLocalFindings] = useState<Finding[]>(() => 
@@ -361,6 +430,9 @@ const ReliabilityTestDetail: React.FC<{ report: ReliabilityTestReport }> = ({ re
 
     return (
         <div className="space-y-6">
+            {/* New Report Summary */}
+            <ReportSummary report={report} />
+
             {/* KPIs */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-lg border border-slate-200 text-center shadow-sm">
@@ -384,17 +456,20 @@ const ReliabilityTestDetail: React.FC<{ report: ReliabilityTestReport }> = ({ re
             </div>
 
             {/* Findings by Category */}
-            <div className="space-y-6">
-                {Object.entries(findingsByCategory).map(([category, findings]) => (
-                    <div key={category} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">{category} ({findings.length}个问题)</h3>
-                        <div className="space-y-3">
-                            {findings.map(finding => (
-                                <FindingRow key={finding.id} finding={finding} onDetailClick={handleDetailClick} onFeedback={handleFeedback} />
-                            ))}
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">所有问题列表</h3>
+                <div className="space-y-6">
+                    {Object.entries(findingsByCategory).map(([category, findings]) => (
+                        <div key={category}>
+                             <h4 className="text-md font-bold text-slate-700 mb-3 border-b border-slate-200 pb-2">{category} ({findings.length}个问题)</h4>
+                            <div className="space-y-3">
+                                {findings.map(finding => (
+                                    <FindingRow key={finding.id} finding={finding} onDetailClick={handleDetailClick} onFeedback={handleFeedback} />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
             
             <FindingDetailModal finding={selectedFinding} onClose={() => setSelectedFinding(null)} />

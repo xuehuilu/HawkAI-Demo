@@ -124,10 +124,31 @@ const PRECISION_TEST_REPORT_DATA: Pick<PrecisionTestReport, 'type' | 'conclusion
 
 // Data for the new Reliability Test Report
 // @google/genai-api-fix: Simplify complex Omit type with Pick to improve TypeScript inference and fix discriminated union issues.
-const RELIABILITY_TEST_REPORT_DATA: Pick<ReliabilityTestReport, 'type' | 'health' | 'stats' | 'findings'> = {
+const RELIABILITY_TEST_REPORT_DATA: Pick<ReliabilityTestReport, 'type' | 'health' | 'stats' | 'findings' | 'changeSummary' | 'keyFindings' | 'impactAssessment'> = {
     type: '可靠性测试',
     health: 82,
     stats: { newIssues: 7, fixedIssues: 2, healthChange: -5, p0Issues: 1 },
+    changeSummary: {
+        title: '重构库存服务，并优化了订单创建流程',
+        fileCount: 8,
+        additions: 256,
+        deletions: 98,
+    },
+    keyFindings: {
+        goodNews: [
+            `修复了 2 个历史遗留问题`,
+            `库存服务 'StockService' 的代码复杂度从 15 降低到 9`,
+        ],
+        warnings: [
+            `在核心服务 'StockService.java' 中发现 1 个 P0 级严重问题`,
+            `在 'OrderService.java' 中发现 1 个 P1 级事务风险`,
+            `共发现 7 个新问题`,
+        ]
+    },
+    impactAssessment: {
+        scope: '变更涉及核心交易链路（库存、订单），影响范围：高',
+        recommendation: '建议在上线前重点测试“下单扣减库存”和“并发下单”场景。',
+    },
     findings: [
         {
             id: 'f-1',
@@ -299,16 +320,6 @@ export const REPORTS: Report[] = [
         date: '2025-11-10',
         createdByRole: 'architect',
         ...RELIABILITY_TEST_REPORT_DATA,
-    },
-    {
-        id: 'report-5',
-        title: '订单服务 - 精准测试报告',
-        icon: '🎯',
-        agentName: '订单服务-精准测试',
-        repoName: 'order-service',
-        date: '2025-11-05',
-        createdByRole: 'tech-lead',
-        ...PRECISION_TEST_REPORT_DATA,
     },
 ];
 

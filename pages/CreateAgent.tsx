@@ -99,7 +99,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
   return (
     <div className="h-full flex flex-col md:flex-row">
         {/* Left Panel: Stepper and Info */}
-        <aside className="w-full md:w-80 lg:w-96 bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 lg:p-8 flex flex-col">
+        <aside className="w-full md:w-72 lg:w-80 bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 lg:p-8 flex flex-col flex-shrink-0">
             <h1 className="text-2xl font-bold text-slate-800">{agentToEdit ? `编辑 Agent` : '创建新Agent'}</h1>
             <p className="mt-1 text-sm text-slate-500 mb-6">{agentToEdit ? agentToEdit.name : '通过以下步骤配置你的智能测试助手'}</p>
             <div className="flex-1 overflow-y-auto -mr-4 pr-4">
@@ -112,7 +112,7 @@ export const CreateAgent: React.FC<CreateAgentProps> = ({ navigateTo, repositori
 
         {/* Right Panel: Step Content */}
         <main className="flex-1 overflow-y-auto bg-slate-50">
-            <div className="max-w-7xl mx-auto p-6 sm:p-8 lg:p-12">
+            <div className="max-w-4xl mx-auto p-6 sm:p-8 lg:p-12">
                 {renderStepContent()}
             </div>
         </main>

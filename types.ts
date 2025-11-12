@@ -135,6 +135,20 @@ export interface ReliabilityTestReport extends BaseReport {
     type: '可靠性测试';
     health: number;
     findings: Finding[];
+    changeSummary?: {
+        title: string;
+        fileCount: number;
+        additions: number;
+        deletions: number;
+    };
+    keyFindings?: {
+        goodNews: string[];
+        warnings: string[];
+    };
+    impactAssessment?: {
+        scope: string;
+        recommendation: string;
+    };
 }
 
 
